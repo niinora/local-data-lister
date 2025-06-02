@@ -1,12 +1,107 @@
 [
-  { 
-    "name": "Joe's Pizza", 
-    "type": "Restaurant", 
-    "details": "Italian, open late" 
+  {
+    "id": "rest_001",
+    "name": "Joe's Pizza Palace",
+    "type": "Restaurant",
+    "details": "Authentic New York style pizza with fresh ingredients. Family-owned since 1985.",
+    "location": {
+      "address": "123 Main Street",
+      "city": "Springfield",
+      "state": "IL",
+      "zipCode": "62701",
+      "coordinates": {
+        "lat": 39.7817,
+        "lng": -89.6501
+      }
+    },
+    "contact": {
+      "phone": "(555) 123-4567",
+      "email": "info@joespizza.com",
+      "website": "https://joespizza.com"
+    },
+    "rating": 4.5,
+    "priceRange": "$$",
+    "hours": {
+      "monday": "11:00 AM - 10:00 PM",
+      "tuesday": "11:00 AM - 10:00 PM",
+      "wednesday": "11:00 AM - 10:00 PM",
+      "thursday": "11:00 AM - 11:00 PM",
+      "friday": "11:00 AM - 12:00 AM",
+      "saturday": "12:00 PM - 12:00 AM",
+      "sunday": "12:00 PM - 9:00 PM"
+    },
+    "tags": ["italian", "pizza", "family-friendly", "takeout", "delivery"],
+    "isActive": true,
+    "createdAt": "2024-01-15T10:30:00Z",
+    "updatedAt": "2024-12-01T14:22:00Z"
   },
-  { 
-    "name": "Green Cafe", 
-    "type": "Cafe", 
-    "details": "Coffee and pastries" 
+  {
+    "id": "cafe_001",
+    "name": "Green Leaf Cafe",
+    "type": "Cafe",
+    "details": "Cozy coffee shop with organic beans, fresh pastries, and free WiFi. Perfect for remote work.",
+    "location": {
+      "address": "456 Oak Avenue",
+      "city": "Springfield",
+      "state": "IL",
+      "zipCode": "62702",
+      "coordinates": {
+        "lat": 39.7851,
+        "lng": -89.6440
+      }
+    },
+    "contact": {
+      "phone": "(555) 987-6543",
+      "website": "https://greenleafcafe.com"
+    },
+    "rating": 4.2,
+    "priceRange": "$",
+    "hours": {
+      "monday": "6:00 AM - 8:00 PM",
+      "tuesday": "6:00 AM - 8:00 PM",
+      "wednesday": "6:00 AM - 8:00 PM",
+      "thursday": "6:00 AM - 8:00 PM",
+      "friday": "6:00 AM - 9:00 PM",
+      "saturday": "7:00 AM - 9:00 PM",
+      "sunday": "7:00 AM - 7:00 PM"
+    },
+    "tags": ["coffee", "organic", "wifi", "pastries", "vegan-options"],
+    "isActive": true,
+    "createdAt": "2024-02-01T09:15:00Z",
+    "updatedAt": "2024-11-15T11:45:00Z"
+  },
+  {
+    "id": "park_001",
+    "name": "Riverside Park",
+    "type": "Park",
+    "details": "Beautiful 50-acre park with walking trails, playground, and picnic areas along the river.",
+    "location": {
+      "address": "789 River Road",
+      "city": "Springfield",
+      "state": "IL",
+      "zipCode": "62703",
+      "coordinates": {
+        "lat": 39.7901,
+        "lng": -89.6234
+      }
+    },
+    "contact": {
+      "phone": "(555) 555-0123",
+      "website": "https://springfieldparks.gov/riverside"
+    },
+    "rating": 4.8,
+    "hours": {
+      "monday": "6:00 AM - 10:00 PM",
+      "tuesday": "6:00 AM - 10:00 PM",
+      "wednesday": "6:00 AM - 10:00 PM",
+      "thursday": "6:00 AM - 10:00 PM",
+      "friday": "6:00 AM - 10:00 PM",
+      "saturday": "6:00 AM - 10:00 PM",
+      "sunday": "6:00 AM - 10:00 PM"
+    },
+    "tags": ["outdoor", "family-friendly", "trails", "playground", "free"],
+    "isActive": true,
+    "createdAt": "2024-01-01T00:00:00Z",
+    "updatedAt": "2024-10-01T12:00:00Z"
   }
 ]
