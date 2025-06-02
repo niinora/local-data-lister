@@ -1,0 +1,12 @@
+[
+  { 
+    "name": "Joe's Pizza", 
+    "type": "Restaurant", 
+    "details": "Italian, open late" 
+  },
+  { 
+    "name": "Green Cafe", 
+    "type": "Cafe", 
+    "details": "Coffee and pastries" 
+  }
+]
