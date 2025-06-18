@@ -1,16 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import './App.css';
 
 function App() {
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    setTimeout(() => setLoading(false), 1000); // Simulate API call
-  }, []);
+  const [filter, setFilter] = useState('');
 
   return (
     <div>
-      {loading ? <h1>Loading...</h1> : <h1>Local Data Lister</h1>}
+      <input
+        type="text"
+        value={filter}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFilter(e.target.value)}
+        placeholder="Filter by type"
+      />
+      <h1>Local Data Lister</h1>
     </div>
   );
 }
