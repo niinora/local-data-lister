@@ -1,17 +1,23 @@
 const express = require('express');
 const fs = require('fs');
 const { connect } = require('./db');
+const Joi = require('joi');
+const cors = require('cors')
 const app = express();
 
 app.use(express.json());
-
+app.use(cors());
+const itemSchema = Joi.object({
+  name: Joi.string().required(),
+  type: Joi.string().required(),
+  details: Joi.string().required()
+});
 
 async function importData() {
   try {
     const db = await connect();
     const collection = db.collection('items');
     
-
     const count = await collection.countDocuments();
     if (count === 0) {
       const data = JSON.parse(fs.readFileSync('data.json'));
@@ -34,6 +40,17 @@ app.get('/api/items', async (req, res) => {
   }
 });
 
+app.post('/api/items', async (req, res) => {
+  try {
+    const { error } = itemSchema.validate(req.body);
+    if (error) return res.status(400).json({ error: error.details[0].message });
+    const db = await connect();
+    await db.collection('items').insertOne(req.body);
+    res.status(201).json(req.body);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to create item' });
+  }
+});
 
 async function startServer() {
   try {
