@@ -10,8 +10,10 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "aws-serverless-express": "^3.4.0",
     "cors": "^2.8.5",
     "express": "^5.1.0",
+    "fs": "^0.0.1-security",
     "joi": "^17.13.3",
     "mongodb": "^6.17.0"
   }
