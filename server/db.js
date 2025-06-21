@@ -1,6 +1,6 @@
 const { MongoClient } = require('mongodb');
 
-const uri = process.env.MONGODB_URI || 'mongodb://tama:yourSecurePassword@localhost:27017/';
+const uri = process.env.MONGODB_URI || 'mongodb+srv://tama:yourSecurePassword@cluster0.fnj81vo.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
 const client = new MongoClient(uri);
 const dbName = 'localDataLister';
 

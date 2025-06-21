@@ -1,70 +1,119 @@
 const express = require('express');
 const awsServerlessExpress = require('aws-serverless-express');
-const { connect } = require('./db');
-const Joi = require('joi');
-const cors = require('cors');
 
-// Load data.json (must be in zip)
-const data = require('./data.json');
-
+// Test without DB first
 const app = express();
 app.use(express.json());
-app.use(cors());
 
-console.log('Express app initialized, listening for /api/items');
+console.log('Lambda function starting...');
 
-const itemSchema = Joi.object({
-  name: Joi.string().required(),
-  type: Joi.string().required(),
-  details: Joi.string().required()
+// Simple test route that doesn't use MongoDB
+app.get('/', (req, res) => {
+  console.log('Root route accessed');
+  try {
+    res.json({ 
+      message: 'Lambda function is working!', 
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'not set',
+      mongoUri: process.env.MONGODB_URI ? 'set' : 'not set'
+    });
+  } catch (error) {
+    console.error('Error in root route:', error);
+    res.status(500).json({ error: 'Root route error', details: error.message });
+  }
 });
 
-async function importData() {
-  try {
-    const db = await connect();
-    const collection = db.collection('items');
-    const count = await collection.countDocuments();
-    if (count === 0) {
-      await collection.insertMany(data);
-      console.log('Data imported successfully');
-    }
-  } catch (error) {
-    console.error('Failed to import data:', error);
-  }
-}
+// Test route without MongoDB connection
+app.get('/test', (req, res) => {
+  console.log('Test route accessed');
+  res.json({ message: 'Test route working', query: req.query });
+});
 
+// MongoDB routes - wrapped in try-catch
 app.get('/api/items', async (req, res) => {
-  console.log('Received GET request for /api/items, query:', req.query);
+  console.log('GET /api/items received');
   try {
-    await importData();
+    // Try to require the db module
+    const { connect } = require('./db');
+    console.log('DB module loaded successfully');
+    
     const db = await connect();
-    const filter = req.query.type ? { type: req.query.type } : {};
-    const items = await db.collection('items').find(filter).toArray();
-    console.log('Items fetched:', items);
+    console.log('Connected to MongoDB successfully');
+    
+    const items = await db.collection('items').find({}).toArray();
+    console.log('Items fetched:', items.length);
+    
     res.json(items);
   } catch (error) {
     console.error('Error in GET /api/items:', error);
-    res.status(500).json({ error: 'Failed to fetch items' });
+    res.status(500).json({ 
+      error: 'Database error', 
+      details: error.message,
+      stack: error.stack 
+    });
   }
 });
 
 app.post('/api/items', async (req, res) => {
-  console.log('Received POST request for /api/items, body:', req.body);
+  console.log('POST /api/items received');
   try {
-    const { error } = itemSchema.validate(req.body);
-    if (error) return res.status(400).json({ error: error.details[0].message });
+    const { connect } = require('./db');
     const db = await connect();
-    await db.collection('items').insertOne(req.body);
-    console.log('Item created:', req.body);
-    res.status(201).json(req.body);
+    
+    const result = await db.collection('items').insertOne(req.body);
+    res.status(201).json({ success: true, id: result.insertedId });
   } catch (error) {
     console.error('Error in POST /api/items:', error);
-    res.status(500).json({ error: 'Failed to create item' });
+    res.status(500).json({ 
+      error: 'Database error', 
+      details: error.message 
+    });
   }
 });
 
-const server = awsServerlessExpress.createServer(app);
+// Catch all other routes
+app.use('*', (req, res) => {
+  console.log('Unmatched route:', req.method, req.originalUrl);
+  res.status(404).json({ 
+    error: 'Route not found',
+    method: req.method,
+    url: req.originalUrl,
+    availableRoutes: ['GET /', 'GET /test', 'GET /api/items', 'POST /api/items']
+  });
+});
+
+// Error handling middleware
+app.use((error, req, res, next) => {
+  console.error('Global error handler:', error);
+  res.status(500).json({ 
+    error: 'Server error', 
+    details: error.message 
+  });
+});
+
+let server;
+try {
+  server = awsServerlessExpress.createServer(app);
+  console.log('Server created successfully');
+} catch (error) {
+  console.error('Error creating server:', error);
+}
+
 exports.handler = (event, context) => {
-  console.log('Lambda handler invoked, event:', event);
-  return awsServerlessExpress.proxy(server, event, context);
+  console.log('=== Lambda Handler Invoked ===');
+  console.log('Event:', JSON.stringify(event, null, 2));
+  console.log('Context:', JSON.stringify(context, null, 2));
+  
+  try {
+    return awsServerlessExpress.proxy(server, event, context);
+  } catch (error) {
+    console.error('Error in handler:', error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ 
+        error: 'Handler error', 
+        details: error.message 
+      })
+    };
+  }
 };
