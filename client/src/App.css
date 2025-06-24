@@ -3,13 +3,16 @@ div {
   max-width: 600px;
   margin: 0 auto;
   padding: 20px;
+  background-color: #ffffff;
 }
 
 h1 {
-  color: #2c3e50;
+  color: #111827;
   text-align: center;
-  padding: 20px;
-  background-color: #ecf0f1;
+  padding: 16px;
+  background-color: #f9fafb;
+  font-size: 1.875rem;
+  font-weight: 600;
 }
 
 input {
@@ -18,8 +21,16 @@ input {
   width: 100%;
   max-width: 250px;
   font-size: 16px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  background-color: #ffffff;
+  transition: border-color 0.2s ease;
+}
+
+input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 ul {
@@ -28,27 +39,28 @@ ul {
 }
 
 li {
-  padding: 5px 0;
+  padding: 6px 0;
 }
 
 button.filter-button {
-  padding: 10px 15px;
-  margin: 10px;
+  padding: 10px 16px;
+  margin: 8px;
   font-size: 16px;
-  background-color: #4a90e2;
-  color: white;
+  font-weight: 500;
+  background-color: #3b82f6;
+  color: #ffffff;
   border: none;
-  border-radius: 5px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.2s ease;
 }
 
 button.filter-button:hover {
-  background-color: #357ab8;
+  background-color: #2563eb;
 }
 
 button.filter-button:active {
-  background-color: #2a5d8f;
+  background-color: #1d4ed8;
 }
 
 .filter-container {
@@ -56,8 +68,8 @@ button.filter-button:active {
   justify-content: center;
   align-items: center;
   width: 100%;
-  margin: 20px 0;
-  gap: 10px;
+  margin: 16px 0;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
@@ -65,67 +77,76 @@ button.filter-button:active {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
-  background-color: #f5f5f5;
-  border-bottom: 1px solid #e0e0e0;
-  margin-bottom: 20px;
+  padding: 16px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 16px;
 }
 
 .app-title {
   margin: 0;
-  font-size: 24px;
-  color: #333;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #111827;
 }
 
 .items-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
   width: 100%;
   padding: 0;
-  margin-top: 20px;
+  margin-top: 16px;
 }
 
 .item {
-  border: 1px solid #e0e0e0;
+  border: 1px solid #e5e7eb;
   border-radius: 8px;
-  padding: 15px;
-  background-color: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  background-color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.item:hover {
+  transform: translateY(-2px);
 }
 
 .item h2 {
-  margin-top: 0;
-  color: #333;
-  font-size: 1.5rem;
+  margin: 0 0 8px;
+  color: #111827;
+  font-size: 1.25rem;
+  font-weight: 500;
 }
 
 .item p {
-  margin: 8px 0;
-  color: #555;
+  margin: 4px 0;
+  color: #6b7280;
+  font-size: 0.875rem;
 }
 
 @media (max-width: 600px) {
   div {
-    padding: 10px;
+    padding: 12px;
   }
 
   input {
     max-width: 100%;
-    margin-bottom: 10px;
+    margin: 8px 0;
   }
 
   h1 {
-    font-size: 1.5em;
+    font-size: 1.5rem;
   }
 
   .filter-container {
     flex-direction: column;
     align-items: stretch;
+    gap: 8px;
   }
 
   button.filter-button {
-    margin-top: 0;
+    margin: 4px 0;
   }
 
   .items-container {

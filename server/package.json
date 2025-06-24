@@ -17,5 +17,9 @@
     "mongodb": "^6.17.0",
     "serverless-http": "^3.2.0"
   },
-  "description": ""
+  "description": "",
+  "devDependencies": {
+    "jest": "^30.0.2",
+    "supertest": "^7.1.1"
+  }
 }
