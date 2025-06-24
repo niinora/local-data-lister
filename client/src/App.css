@@ -1,14 +1,11 @@
-.App {
-  width: 100%;
-  max-width: 100%;
-  padding: 0 20px;
-  margin: 0;
-  box-sizing: border-box;
+
+div {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
 }
 
-
 h1 {
-  width: 100%;
   color: #2c3e50;
   text-align: center;
   padding: 20px;
@@ -17,19 +14,22 @@ h1 {
 
 input {
   padding: 10px;
-  margin: 0;
+  margin: 10px;
   width: 100%;
-  max-width: 400px;
+  max-width: 250px;
   font-size: 16px;
   border-radius: 5px;
   border: 1px solid #ccc;
 }
 
-
-@media (max-width: 600px) {
-  input { max-width: 100%; }
+ul {
+  list-style: none;
+  padding: 0;
 }
 
+li {
+  padding: 5px 0;
+}
 
 button.filter-button {
   padding: 10px 15px;
@@ -53,19 +53,12 @@ button.filter-button:active {
 
 .filter-container {
   display: flex;
+  justify-content: center;
   align-items: center;
+  width: 100%;
+  margin: 20px 0;
+  gap: 10px;
   flex-wrap: wrap;
-}
-
-@media (max-width: 600px) {
-  .filter-container {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  button.filter-button {
-    margin-top: 0;
-  }
 }
 
 .app-header {
@@ -82,15 +75,6 @@ button.filter-button:active {
   margin: 0;
   font-size: 24px;
   color: #333;
-}
-
-.filter-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  margin: 20px 0;
-  gap: 10px;
 }
 
 .items-container {
@@ -122,15 +106,28 @@ button.filter-button:active {
 }
 
 @media (max-width: 600px) {
-  .filter-container {
-    flex-direction: column;
+  div {
+    padding: 10px;
   }
-  
+
   input {
     max-width: 100%;
     margin-bottom: 10px;
   }
-  
+
+  h1 {
+    font-size: 1.5em;
+  }
+
+  .filter-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  button.filter-button {
+    margin-top: 0;
+  }
+
   .items-container {
     grid-template-columns: 1fr;
   }
