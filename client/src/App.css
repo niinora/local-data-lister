@@ -128,15 +128,16 @@ button.filter-button:active {
 }
 
 .item p {
-  margin: 4px 0;
-  font-size: 0.875rem;
-  color: #64748b; /* Muted but visible text color */
-  flex-grow: 1; /* Fill remaining space */
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
+    margin: 4px 0;
+    font-size: 0.875rem;
+    color: #64748b; /* Muted but visible text color */
+    flex-grow: 1; /* Fill remaining space */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;  /* Add this line */
+    -webkit-box-orient: vertical;
 }
 
 ul {
