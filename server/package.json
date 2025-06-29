@@ -23,6 +23,7 @@
     "fs": "^0.0.1-security",
     "joi": "^17.13.3",
     "mongodb": "^6.17.0",
+    "multer": "^2.0.1",
     "serverless-http": "^3.2.0"
   },
   "description": "",

@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import AddItemForm from './components/AddItemForm';
 import DeleteItemModal from './components/DeleteItemModal';
 import LoginPage from './components/LoginPage';
 import './App.css';
@@ -10,10 +9,98 @@ interface Item {
   type: string;
   details: string;
   createdAt?: string;
+  photo?: string; // Base64 string or URL for the photo
 }
 
 type SortField = 'name' | 'type' | 'createdAt' | 'none';
 type SortOrder = 'asc' | 'desc';
+
+// Local AddItemForm component
+function AddItemForm({ onItemAdded, token, setError }: { onItemAdded: () => void; token: string; setError: (error: string | null) => void }) {
+  const [name, setName] = useState('');
+  const [type, setType] = useState('');
+  const [details, setDetails] = useState('');
+  const [photo, setPhoto] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name || !type) {
+      setError('Name and type are required');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('type', type);
+    formData.append('details', details);
+    if (photo) {
+      formData.append('photo', photo);
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await fetch('/api/items', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setName('');
+        setType('');
+        setDetails('');
+        setPhoto(null);
+        onItemAdded();
+      } else {
+        setError(`Failed to add item: ${data.message || response.statusText}`);
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      setError(`Add item error: ${errorMessage}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="add-item-form">
+      <h2>Add New Item</h2>
+      <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          placeholder="Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+        />
+        <input
+          type="text"
+          placeholder="Type"
+          value={type}
+          onChange={(e) => setType(e.target.value)}
+          required
+        />
+        <textarea
+          placeholder="Details"
+          value={details}
+          onChange={(e) => setDetails(e.target.value)}
+        />
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => setPhoto(e.target.files ? e.target.files[0] : null)}
+        />
+        <button type="submit" disabled={loading}>
+          {loading ? 'Adding...' : 'Add Item'}
+        </button>
+      </form>
+    </div>
+  );
+}
 
 function App() {
   const [items, setItems] = useState<Item[]>([]);
@@ -149,7 +236,7 @@ function App() {
       }
       const aValue = a[field]?.toLowerCase() || '';
       const bValue = b[field]?.toLowerCase() || '';
-      return order === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(bValue);
+      return order === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
     });
   };
 
@@ -194,7 +281,12 @@ function App() {
   };
 
   const openItemModal = (item: Item) => {
-    setSelectedItem(item);
+    try {
+      setSelectedItem(item);
+    } catch (error) {
+      console.error('Error opening item modal:', error);
+      setError('Failed to open item details');
+    }
   };
 
   const closeItemModal = () => {
@@ -302,6 +394,13 @@ function App() {
               style={{ cursor: 'pointer' }}
             >
               <h2>{item.name || 'Unnamed'}</h2>
+              {item.photo && (
+                <img 
+                  src={item.photo} 
+                  alt={item.name || 'Item photo'} 
+                  style={{ maxWidth: '100px', maxHeight: '100px', objectFit: 'cover' }} 
+                />
+              )}
               <p><strong>Type:</strong> {item.type || 'N/A'}</p>
               <p>{item.details || 'No details'}</p>
               <small>Created: {formatDate(item.createdAt)}</small>
@@ -328,14 +427,25 @@ function App() {
               </button>
             </div>
             <div className="modal-body">
-              <div className="item-detail-row">
-                <strong>Type:</strong> {selectedItem.type || 'N/A'}
-              </div>
-              <div className="item-detail-row">
-                <strong>Details:</strong> {selectedItem.details || 'No details'}
-              </div>
-              <div className="item-detail-row">
-                <strong>Created:</strong> {formatDate(selectedItem.createdAt)}
+              {selectedItem.photo && (
+                <div className="modal-photo">
+                  <img 
+                    src={selectedItem.photo} 
+                    alt={selectedItem.name || 'Item photo'} 
+                    className="modal-photo-img"
+                  />
+                </div>
+              )}
+              <div className="modal-details">
+                <div className="item-detail-row">
+                  <strong>Type:</strong> {selectedItem.type || 'N/A'}
+                </div>
+                <div className="item-detail-row">
+                  <strong>Details:</strong> {selectedItem.details || 'No details'}
+                </div>
+                <div className="item-detail-row">
+                  <strong>Created:</strong> {formatDate(selectedItem.createdAt)}
+                </div>
               </div>
             </div>
             <div className="modal-actions">
