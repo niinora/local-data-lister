@@ -3,16 +3,31 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "start": "node index.js",
+    "build": "echo 'No build step required' && exit 0",
+    "dev": "nodemon index.js",
+    "postbuild": "echo 'Build complete'"
+  },
+  "jest": {
+    "testEnvironment": "node"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
   "dependencies": {
+    "aws-serverless-express": "^3.4.0",
     "cors": "^2.8.5",
+    "dotenv": "^17.0.0",
     "express": "^5.1.0",
+    "fs": "^0.0.1-security",
     "joi": "^17.13.3",
-    "mongodb": "^6.17.0"
+    "mongodb": "^6.17.0",
+    "serverless-http": "^3.2.0"
+  },
+  "description": "",
+  "devDependencies": {
+    "jest": "^30.0.3",
+    "supertest": "^7.1.1"
   }
 }

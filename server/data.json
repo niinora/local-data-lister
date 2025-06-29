@@ -1,6 +1,6 @@
 [
   {
-    "id": "rest_001",
+    "_id": "rest_001",
     "name": "Joe's Pizza Palace",
     "type": "Restaurant",
     "details": "Authentic New York style pizza with fresh ingredients. Family-owned since 1985.",
@@ -36,7 +36,7 @@
     "updatedAt": "2024-12-01T14:22:00Z"
   },
   {
-    "id": "cafe_001",
+    "_id": "cafe_001",
     "name": "Green Leaf Cafe",
     "type": "Cafe",
     "details": "Cozy coffee shop with organic beans, fresh pastries, and free WiFi. Perfect for remote work.",
@@ -71,7 +71,7 @@
     "updatedAt": "2024-11-15T11:45:00Z"
   },
   {
-    "id": "park_001",
+    "_id": "park_001",
     "name": "Riverside Park",
     "type": "Park",
     "details": "Beautiful 50-acre park with walking trails, playground, and picnic areas along the river.",
