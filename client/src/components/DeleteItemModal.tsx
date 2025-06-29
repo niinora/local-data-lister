@@ -12,39 +12,32 @@ const DeleteItemModal: React.FC<DeleteItemModalProps> = ({ isOpen, onClose, onCo
   if (!isOpen) return null;
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: 'rgba(0, 0, 0, 0.5)',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        zIndex: 1000,
-      }}
-    >
-      <div className="item" style={{ maxWidth: '400px', width: '90%', padding: '20px' }}>
-        <h2 className="text-lg font-semibold text-[var(--text-primary)]">Confirm Deletion</h2>
-        <p className="text-[var(--text-secondary)] mb-4">
-          Are you sure you want to delete "{itemName}"? This action cannot be undone.
-        </p>
-        <div className="flex justify-end gap-2">
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2>Confirm Deletion</h2>
           <button
-            className="sort-button"
+            className="modal-close-btn"
+            onClick={onClose}
+          >
+            ×
+          </button>
+        </div>
+        <div className="modal-body">
+          <p>Are you sure you want to delete "{itemName}"? This action cannot be undone.</p>
+        </div>
+        <div className="modal-actions">
+          <button
+            className="btn btn-secondary"
             onClick={onClose}
             disabled={loading}
-            style={{ background: 'var(--bg-accent)', color: 'var(--text-primary)' }}
           >
             Cancel
           </button>
           <button
-            className="filter-button"
+            className="btn btn-danger"
             onClick={onConfirm}
             disabled={loading}
-            style={{ background: '#e53e3e' }}
           >
             {loading ? 'Deleting...' : 'Delete'}
           </button>

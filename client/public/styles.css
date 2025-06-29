@@ -17,11 +17,47 @@ body {
     padding: 20px;
 }
 
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
 header h1 {
-    text-align: center;
     color: #2c3e50;
     font-size: 2.5rem;
-    margin-bottom: 30px;
+}
+
+.auth-section {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+/* Login Form Styles */
+.login-form {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    max-width: 400px;
+    margin: 50px auto;
+    text-align: center;
+}
+
+.login-form h2 {
+    margin-bottom: 20px;
+    color: #2c3e50;
+}
+
+.login-form input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
 }
 
 .controls {
@@ -30,6 +66,28 @@ header h1 {
     margin-bottom: 30px;
     flex-wrap: wrap;
     align-items: center;
+}
+
+.search-section {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex: 1;
+}
+
+.search-input {
+    flex: 1;
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    min-width: 200px;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
 }
 
 .filter-section, .sort-section {
@@ -74,11 +132,16 @@ select {
     border-radius: 8px;
     cursor: pointer;
     font-size: 14px;
+    transition: background-color 0.3s;
 }
 
 .btn-primary {
-    background: #27ae60;
+    background: #3498db;
     color: white;
+}
+
+.btn-primary:hover {
+    background: #2980b9;
 }
 
 .btn-success {
@@ -86,9 +149,17 @@ select {
     color: white;
 }
 
+.btn-success:hover {
+    background: #219a52;
+}
+
 .btn-secondary {
     background: #95a5a6;
     color: white;
+}
+
+.btn-secondary:hover {
+    background: #7f8c8d;
 }
 
 .item-form {
@@ -96,6 +167,7 @@ select {
     padding: 20px;
     border-radius: 8px;
     margin-top: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
 .item-form input, .item-form textarea {
@@ -126,6 +198,11 @@ select {
     padding: 20px;
     border-radius: 12px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    position: relative;
+}
+
+.item-card:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
 }
 
 .item-name {
@@ -142,11 +219,34 @@ select {
     padding: 4px 12px;
     border-radius: 20px;
     font-size: 12px;
+    font-weight: 500;
     margin-bottom: 12px;
 }
 
 .item-details {
     color: #7f8c8d;
+    line-height: 1.5;
+}
+
+.delete-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.delete-btn:hover {
+    background: #c0392b;
 }
 
 .loading, .error {
@@ -160,57 +260,26 @@ select {
     border-radius: 8px;
 }
 
-.search-section {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    flex: 1;
-}
-
-.search-input {
-    flex: 1;
-    padding: 10px 15px;
-    border: 1px solid #ddd;
+.no-items {
+    text-align: center;
+    padding: 40px;
+    color: #7f8c8d;
+    font-size: 1.1rem;
+    background: white;
     border-radius: 8px;
-    font-size: 14px;
-    min-width: 200px;
-}
-
-.search-input:focus {
-    outline: none;
-    border-color: #3498db;
-    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
-    .controls {
+    .container {
+        padding: 15px;
+    }
+    
+    header {
         flex-direction: column;
-        align-items: stretch;
-    }
-    
-    .items-list {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 480px) {
-    .container {
-        padding: 10px;
-    }
-    
-    .item-card {
-        padding: 15px;
-    }
-    
-    .item-form {
-        padding: 20px;
-    }
-}
-
-@media (max-width: 768px) {
-    .container {
-        padding: 15px;
+        gap: 15px;
+        text-align: center;
     }
     
     header h1 {
@@ -258,6 +327,6 @@ select {
     }
     
     .item-form {
-        padding: 20px;
+        padding: 15px;
     }
 }
