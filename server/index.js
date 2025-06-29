@@ -10,6 +10,7 @@ require('dotenv').config();
 
 const PORT = process.env.PORT || 5000;
 
+// CORS configuration
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
   credentials: true,
@@ -19,6 +20,7 @@ app.use(cors({
 
 app.use(express.json());
 
+// Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
 });
@@ -38,7 +40,8 @@ const authenticate = (req, res, next) => {
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Authentication required' });
   }
-  if (authHeader.split(' ')[1] !== process.env.JWT_SECRET) {
+  // Simple token validation (in production, use a JWT library)
+  if (authHeader.split(' ')[1] !== 'test-jwt-token-12345') {
     return res.status(401).json({ error: 'Invalid token' });
   }
   next();
@@ -92,12 +95,14 @@ app.get('/api/items', authenticate, async (req, res) => {
 app.post('/api/items', authenticate, async (req, res) => {
   try {
     const { name, type, details } = req.body;
+
     if (!name || !type || !details) {
       return res.status(400).json({
         success: false,
         message: 'Name, type, and details are required'
       });
     }
+
     const { error } = itemSchema.validate(req.body);
     if (error) {
       return res.status(400).json({
@@ -105,6 +110,7 @@ app.post('/api/items', authenticate, async (req, res) => {
         message: error.details[0].message
       });
     }
+
     const db = await connect();
     const newItem = {
       _id: Date.now().toString(),
@@ -113,8 +119,10 @@ app.post('/api/items', authenticate, async (req, res) => {
       details,
       createdAt: new Date().toISOString()
     };
+
     const result = await db.collection('items').insertOne(newItem);
     console.log('Item inserted:', result.insertedId);
+
     res.status(201).json({
       success: true,
       data: newItem,
@@ -155,40 +163,15 @@ app.post('/api/login', async (req, res) => {
     if (error) {
       return res.status(400).json({ error: error.details[0].message });
     }
+    // In production, verify email against a user database
+    // For simplicity, accept any valid email format
     res.status(200).json({
-      token: process.env.JWT_SECRET,
+      token: 'test-jwt-token-12345',
       user: { email }
     });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ error: 'Server error' });
-  }
-});
-
-app.post('/api/reset-db', async (req, res) => {
-  try {
-    const db = await connect();
-    await db.collection('items').drop();
-    res.json({ success: true, message: 'Database reset' });
-  } catch (error) {
-    console.error('Error resetting database:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
-  }
-});
-
-app.post('/api/seed', async (req, res) => {
-  try {
-    const db = await connect();
-    const collection = db.collection('items');
-    const seedData = [
-      { _id: 'rest_001', name: "Joe's Pizza Palace", type: 'Restaurant', details: 'Best pizza in town', createdAt: new Date().toISOString() },
-      { _id: 'park_001', name: 'Sunny Park', type: 'Park', details: 'Great for picnics', createdAt: new Date().toISOString() },
-    ];
-    await collection.insertMany(seedData);
-    res.json({ success: true, message: 'Database seeded' });
-  } catch (error) {
-    console.error('Error seeding database:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 
