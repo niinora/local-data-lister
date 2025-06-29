@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import AddItemForm from './components/AddItemForm';
 import './App.css';
 
 interface Item {
@@ -23,85 +24,116 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-const login = async () => {
-  try {
-    setLoading(true);
-    setError(null); // Clear previous errors
-    const response = await fetch('http://localhost:5000/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: 'admin', password: 'pass' }),
-    });
-    if (response.ok) {
-      const data = await response.json();
-      setToken(data.token);
-      setIsAuthenticated(true);
-    } else {
-      const errorData = await response.json();
-      setError(`Login failed: ${errorData.error || response.statusText}`);
-      setIsAuthenticated(false);
-    }
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    setError(`Login error: ${errorMessage}. Ensure the backend server is running.`);
-    setIsAuthenticated(false);
-  } finally {
-    setLoading(false);
-  }
-};
-
-  const fetchItems = async () => {
+  const login = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch('http://localhost:5000/api/items', {
-        headers: { 'Authorization': `Bearer ${token}` }
+      const response = await fetch('http://localhost:5000/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: 'admin', password: 'pass' }),
       });
-      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
       const data = await response.json();
-      console.log('Fetched data:', data);
-      if (Array.isArray(data)) {
-        setItems(data);
-        setFilteredItems(data);
+      console.log('Login response:', data);
+      if (response.ok) {
+        setToken(data.token);
+        setIsAuthenticated(true);
       } else {
-        console.error('Data is not an array:', data);
-        setItems([]);
-        setFilteredItems([]);
+        setError(`Login failed: ${data.error || response.statusText}`);
+        setIsAuthenticated(false);
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error('Error fetching data:', error);
-      setError(`Fetch error: ${errorMessage}`);
+      setError(`Login error: ${errorMessage}. Ensure the backend server is running at http://localhost:5000.`);
+      setIsAuthenticated(false);
     } finally {
       setLoading(false);
     }
   };
 
-  const createItem = async (newItem: { name: string; type: string; details: string }) => {
+  const fetchItems = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:5000/api/items', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(newItem)
+      setError(null);
+      console.log('Fetching items with token:', token);
+      const query = sortField !== 'none' ? `?sortBy=${sortField}&sortOrder=${sortOrder}` : '';
+      const response = await fetch(`http://localhost:5000/api/items${query}`, {
+        headers: { 'Authorization': `Bearer ${token}` },
       });
-      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+      console.log('Fetch response status:', response.status);
       const data = await response.json();
-      console.log('Created item response:', data);
-      if (data.success) {
-        setItems(prevItems => [data.data, ...prevItems]);
-        setFilteredItems(prevItems => [data.data, ...prevItems]);
+      console.log('Fetch response data:', data);
+      if (response.ok && Array.isArray(data)) {
+        setItems(data);
+        setFilteredItems(data);
+      } else {
+        console.error('Invalid data format:', data);
+        setItems([]);
+        setFilteredItems([]);
+        setError('Failed to fetch items: Invalid data format');
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error('Error creating item:', error);
-      setError(`Create error: ${errorMessage}`);
+      console.error('Fetch error:', error);
+      setError(`Fetch error: ${errorMessage}`);
+      setItems([]);
+      setFilteredItems([]);
     } finally {
       setLoading(false);
     }
+  };
+
+  const applyFilterAndSort = (searchValue?: string) => {
+    const searchTerm = (searchValue ?? filterValue).toLowerCase().trim();
+    let filtered = items;
+    if (searchTerm) {
+      filtered = items.filter(item =>
+        (item.type?.toLowerCase().includes(searchTerm) || item.name?.toLowerCase().includes(searchTerm))
+      );
+    }
+    const sorted = sortItems(filtered, sortField, sortOrder);
+    setFilteredItems(sorted);
+    console.log('Filtered and sorted items:', sorted);
+  };
+
+  const sortItems = (itemsToSort: Item[], field: SortField, order: SortOrder) => {
+    if (field === 'none') return itemsToSort;
+    return [...itemsToSort].sort((a, b) => {
+      const aValue = a[field]?.toLowerCase() || '';
+      const bValue = b[field]?.toLowerCase() || '';
+      return order === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+    });
+  };
+
+  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setFilterValue(value);
+    applyFilterAndSort(value);
+  };
+
+  const handleSort = (field: SortField) => {
+    const newOrder = sortField === field && sortOrder === 'asc' ? 'desc' : 'asc';
+    setSortField(field);
+    setSortOrder(newOrder);
+    fetchItems();
+  };
+
+  const formatDate = (isoString: string | undefined) => {
+    if (!isoString) return 'N/A';
+    return new Date(isoString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  const getSortButtonText = (field: SortField) => {
+    if (sortField === field) {
+      return `Sort by ${field} ${sortOrder === 'asc' ? '↑' : '↓'}`;
+    }
+    return `Sort by ${field}`;
   };
 
   useEffect(() => {
@@ -112,69 +144,11 @@ const login = async () => {
     }
   }, [isAuthenticated, token]);
 
-  const sortItems = (itemsToSort: Item[], field: SortField, order: SortOrder) => {
-    if (field === 'none') return itemsToSort;
-    return [...itemsToSort].sort((a, b) => {
-      const aValue = a[field].toLowerCase();
-      const bValue = b[field].toLowerCase();
-      return order === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
-    });
-  };
-
-  const applyFilterAndSort = (searchValue?: string) => {
-    const searchTerm = (searchValue ?? filterValue).toLowerCase().trim();
-    let filtered = items;
-    if (searchTerm) {
-      filtered = items.filter(item =>
-        item.type.toLowerCase().includes(searchTerm) ||
-        item.name.toLowerCase().includes(searchTerm)
-      );
-    }
-    const sorted = sortItems(filtered, sortField, sortOrder);
-    setFilteredItems(sorted);
-  };
-
-  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setFilterValue(value);
-    applyFilterAndSort(value);
-  };
-
-  const handleSort = (field: SortField) => {
-    let newOrder: SortOrder = 'asc';
-    if (field === sortField) {
-      newOrder = sortOrder === 'asc' ? 'desc' : 'asc';
-    }
-    setSortField(field);
-    setSortOrder(newOrder);
-    const sorted = sortItems(filteredItems, field, newOrder);
-    setFilteredItems(sorted);
-  };
-
-  const handleCreateItem = () => {
-    const newItem = {
-      name: prompt('Enter item name:') || '',
-      type: prompt('Enter item type:') || '',
-      details: prompt('Enter item details:') || ''
-    };
-    if (newItem.name && newItem.type && newItem.details) {
-      createItem(newItem);
-    } else {
-      setError('All fields are required to create an item');
-    }
-  };
-
-  const getSortButtonText = (field: SortField) => {
-    if (sortField === field) {
-      return `Sort by ${field} ${sortOrder === 'asc' ? '↑' : '↓'}`;
-    }
-    return `Sort by ${field}`;
-  };
-
   return (
     <div className="App">
       <h1>Local Data Lister</h1>
-      {error && <div style={{ color: 'red' }}>Error: {error}</div>}
+      {error && <div className="no-results" style={{ color: 'var(--text-primary)' }}>Error: {error}</div>}
+      <AddItemForm onItemAdded={fetchItems} token={token} setError={setError} />
       <div className="filter-container">
         <input
           type="text"
@@ -182,32 +156,43 @@ const login = async () => {
           value={filterValue}
           onChange={handleFilterChange}
         />
-        <button onClick={() => applyFilterAndSort()}>Filter</button>
+        <button className="filter-button" onClick={() => applyFilterAndSort()}>
+          Filter
+        </button>
       </div>
       <div className="controls-container">
         <div className="sort-buttons">
-          <button onClick={() => handleSort('name')}>{getSortButtonText('name')}</button>
-          <button onClick={() => handleSort('type')}>{getSortButtonText('type')}</button>
+          <button
+            className={`sort-button ${sortField === 'name' ? 'active' : ''}`}
+            onClick={() => handleSort('name')}
+          >
+            {getSortButtonText('name')}
+          </button>
+          <button
+            className={`sort-button ${sortField === 'type' ? 'active' : ''}`}
+            onClick={() => handleSort('type')}
+          >
+            {getSortButtonText('type')}
+          </button>
         </div>
-        <button onClick={handleCreateItem}>Add New Item</button>
       </div>
       <div className="status-bar">
         <span>Showing {filteredItems.length} of {items.length} items</span>
       </div>
       <div className="items-container">
         {loading ? (
-          <div>Loading items...</div>
+          <div className="no-results loading">Loading items...</div>
         ) : filteredItems.length > 0 ? (
           filteredItems.map(item => (
             <div key={item._id} className="item">
-              <h2>{item.name}</h2>
-              <p><strong>Type:</strong> {item.type}</p>
-              <p>{item.details}</p>
-              <p><small>Created: {item.createdAt}</small></p>
+              <h2>{item.name || 'Unnamed'}</h2>
+              <p><strong>Type:</strong> {item.type || 'N/A'}</p>
+              <p>{item.details || 'No details'}</p>
+              <p><small>Created: {formatDate(item.createdAt)}</small></p>
             </div>
           ))
         ) : (
-          <div>
+          <div className="no-results">
             {items.length === 0 ? 'No items found' : 'No matching items found'}
           </div>
         )}
