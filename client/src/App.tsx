@@ -2,10 +2,40 @@ import { useState, useEffect } from 'react';
 import './App.css';
 
 interface Item {
-  _id: string;
+  id: string;
   name: string;
   type: string;
   details: string;
+  location?: {
+    address: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    coordinates?: {
+      lat: number;
+      lng: number;
+    };
+  };
+  contact?: {
+    phone?: string;
+    email?: string;
+    website?: string;
+  };
+  rating?: number;
+  priceRange?: string;
+  hours?: {
+    monday: string;
+    tuesday: string;
+    wednesday: string;
+    thursday: string;
+    friday: string;
+    saturday: string;
+    sunday: string;
+  };
+  tags?: string[];
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 type SortField = 'name' | 'type' | 'none';
@@ -17,20 +47,63 @@ function App() {
   const [filterValue, setFilterValue] = useState('');
   const [sortField, setSortField] = useState<SortField>('none');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
+  const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState<string>('');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  const login = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('http://localhost:5000/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: 'admin', password: 'pass' })
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setToken(data.token);
+        setIsAuthenticated(true);
+        console.log('Login successful, token:', data.token);
+      } else {
+        console.error('Login failed:', await response.json());
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const response = await fetch('http://localhost:5000/api/items');
-        const data = await response.json();
-        setItems(data);
-        setFilteredItems(data);
-      } catch (error) {
-        console.error('Error fetching data:', error);
+    if (!isAuthenticated) {
+      login(); // Auto-login on mount
+    } else if (token) {
+      async function fetchData() {
+        try {
+          setLoading(true);
+          const response = await fetch('http://localhost:5000/api/items', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+          const data = await response.json();
+          console.log('Fetched data:', data);
+          if (Array.isArray(data)) {
+            setItems(data);
+            setFilteredItems(data);
+          } else {
+            console.error('Data is not an array:', data);
+            setItems([]);
+            setFilteredItems([]);
+          }
+        } catch (error) {
+          console.error('Error fetching data:', error);
+        } finally {
+          setLoading(false);
+        }
       }
+      fetchData();
     }
-    fetchData();
-  }, []);
+  }, [isAuthenticated, token]);
 
   const sortItems = (itemsToSort: Item[], field: SortField, order: SortOrder) => {
     if (field === 'none') return itemsToSort;
@@ -75,7 +148,6 @@ function App() {
   const handleSort = (field: SortField) => {
     let newOrder: SortOrder = 'asc';
     
-    // If clicking the same field, toggle order
     if (field === sortField) {
       newOrder = sortOrder === 'asc' ? 'desc' : 'asc';
     }
@@ -154,9 +226,11 @@ function App() {
       </div>
 
       <div className="items-container">
-        {filteredItems.length > 0 ? (
+        {loading ? (
+          <div className="no-results">Loading items...</div>
+        ) : filteredItems.length > 0 ? (
           filteredItems.map(item => (
-            <div key={item._id} className="item">
+            <div key={item.id} className="item">
               <h2>{item.name}</h2>
               <p><strong>Type:</strong> {item.type}</p>
               <p>{item.details}</p>
@@ -164,7 +238,7 @@ function App() {
           ))
         ) : (
           <div className="no-results">
-            {items.length === 0 ? 'Loading items...' : 'No matching items found'}
+            {items.length === 0 ? 'No items found' : 'No matching items found'}
           </div>
         )}
       </div>
