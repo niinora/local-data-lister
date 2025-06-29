@@ -4,6 +4,9 @@ const { connect } = require('./db');
 const { addNewPlaces } = require('./add-new-places');
 const Joi = require('joi');
 const cors = require('cors');
+const { OAuth2Client } = require('google-auth-library');
+const jwt = require('jsonwebtoken');
+
 const app = express();
 
 require('dotenv').config();
@@ -35,16 +38,25 @@ const loginSchema = Joi.object({
   email: Joi.string().email().required()
 });
 
+const GOOGLE_CLIENT_ID = '402696465093-jes8oqul64r5jegq18dgccemni30i0t3.apps.googleusercontent.com';
+const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
+
+const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
+
 const authenticate = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Authentication required' });
   }
-  // Simple token validation (in production, use a JWT library)
-  if (authHeader.split(' ')[1] !== 'test-jwt-token-12345') {
+  const token = authHeader.split(' ')[1];
+  try {
+    // Verify JWT (works for both Google and your own issued tokens)
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (err) {
     return res.status(401).json({ error: 'Invalid token' });
   }
-  next();
 };
 
 async function importData() {
@@ -200,6 +212,30 @@ app.post('/api/login', async (req, res) => {
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.post('/api/google-login', async (req, res) => {
+  try {
+    const { credential } = req.body;
+    if (!credential) {
+      return res.status(400).json({ error: 'Missing Google credential' });
+    }
+    // Verify Google ID token
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+    if (!payload || !payload.email) {
+      return res.status(401).json({ error: 'Invalid Google token' });
+    }
+    // Issue your own JWT
+    const token = jwt.sign({ email: payload.email, name: payload.name, picture: payload.picture }, JWT_SECRET, { expiresIn: '1h' });
+    res.status(200).json({ token, user: { email: payload.email, name: payload.name, picture: payload.picture } });
+  } catch (error) {
+    console.error('Google login error:', error);
+    res.status(401).json({ error: 'Google authentication failed' });
   }
 });
 
