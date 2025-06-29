@@ -10,7 +10,7 @@ require('dotenv').config();
 
 const PORT = process.env.PORT || 5000;
 
-// CORS configuration for Render
+// CORS configuration
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:3000',
   credentials: true,
@@ -20,7 +20,7 @@ app.use(cors({
 
 app.use(express.json());
 
-// Health check endpoint for Render
+// Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
 });
@@ -36,6 +36,10 @@ const authenticate = (req, res, next) => {
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Authentication required' });
   }
+  // Simple token validation (in production, use a JWT library)
+  if (authHeader.split(' ')[1] !== 'test-jwt-token-12345') {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
   next();
 };
 
@@ -46,11 +50,11 @@ async function importData() {
     const count = await collection.countDocuments();
     if (count === 0) {
       try {
-        const data = JSON.parse(fs.readFileSync('data.json'));
+        const data = JSON.parse(fs.readFileSync('data.json', 'utf8'));
         await collection.insertMany(data);
         console.log('Data imported from data.json');
       } catch (error) {
-        console.log('No data.json found, skipping initial import');
+        console.log('No data.json found or invalid format, skipping initial import');
       }
     }
     console.log('📍 Adding new places...');
@@ -75,26 +79,60 @@ app.get('/api/items', authenticate, async (req, res) => {
     const items = await db.collection('items').find(filter).sort(sortOptions).toArray();
     res.json(items);
   } catch (error) {
+    console.error('Failed to fetch items:', error);
     res.status(500).json({ error: 'Failed to fetch items' });
   }
 });
 
 app.post('/api/items', authenticate, async (req, res) => {
   try {
+    const { name, type, details } = req.body;
+
+    if (!name || !type || !details) {
+      return res.status(400).json({
+        success: false,
+        message: 'Name, type, and details are required'
+      });
+    }
+
     const { error } = itemSchema.validate(req.body);
-    if (error) return res.status(400).json({ error: error.details[0].message });
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.details[0].message
+      });
+    }
+
     const db = await connect();
-    await db.collection('items').insertOne(req.body);
-    res.status(201).json(req.body);
+    const newItem = {
+      _id: Date.now().toString(), // Using _id for MongoDB compatibility
+      name,
+      type,
+      details,
+      createdAt: new Date().toISOString()
+    };
+
+    const result = await db.collection('items').insertOne(newItem);
+    console.log('Item inserted:', result.insertedId);
+
+    res.status(201).json({
+      success: true,
+      data: newItem,
+      message: 'Item created successfully'
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to create item' });
+    console.error('Error creating item:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
   }
 });
 
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
   if (username === 'admin' && password === 'pass') {
-    res.status(200).json({ 
+    res.status(200).json({
       token: 'test-jwt-token-12345',
       user: { username: 'admin' }
     });
@@ -105,7 +143,7 @@ app.post('/login', (req, res) => {
 
 async function startServer() {
   try {
-    await importData(); 
+    await importData();
     app.listen(PORT, '0.0.0.0', () => {
       console.log(`🌐 Server running on port ${PORT}`);
       console.log(`🌍 Visit http://localhost:${PORT} to view the application`);
