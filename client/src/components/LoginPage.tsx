@@ -25,32 +25,25 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
   };
 
   return (
-    <div className="App">
-      <h1>Login to Local Data Lister</h1>
+    <div className="login-form">
+      <h2>Login to Local Data Lister</h2>
       {error && (
-        <div className="no-results" style={{ color: 'var(--text-primary)', background: '#ffe5e5' }}>
-          Error: {error}
+        <div className="error">
+          {error}
         </div>
       )}
-      <form className="filter-container" onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '1rem' }}>
-          <label htmlFor="email" className="block text-sm font-semibold text-[var(--text-primary)]">
-            Email
-          </label>
-          <input
-            type="email"
-            id="email"
-            placeholder="Enter your email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="w-full"
-          />
-        </div>
+      <form onSubmit={handleSubmit}>
+        <input
+          type="email"
+          placeholder="Enter your email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
         <button
           type="submit"
           disabled={loading}
-          className="filter-button"
+          className="btn btn-primary"
           style={{ width: '100%' }}
         >
           {loading ? 'Logging in...' : 'Log In'}

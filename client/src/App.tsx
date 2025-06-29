@@ -31,12 +31,14 @@ function App() {
     itemName: '',
   });
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
 
   const login = async (email: string) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch('http://localhost:5000/api/login', {
+      const response = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
@@ -68,7 +70,7 @@ function App() {
       setError(null);
       console.log('Fetching items with token:', token);
       const query = sortField !== 'none' ? `?sortBy=${sortField}&sortOrder=${sortOrder}` : '';
-      const response = await fetch(`http://localhost:5000/api/items${query}`, {
+      const response = await fetch(`/api/items${query}`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
       console.log('Fetch response status:', response.status);
@@ -97,7 +99,7 @@ function App() {
     try {
       setDeleteLoading(true);
       setError(null);
-      const response = await fetch(`http://localhost:5000/api/items/${itemId}`, {
+      const response = await fetch(`/api/items/${itemId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -107,18 +109,11 @@ function App() {
       const data = await response.json();
       console.log('Delete response:', data);
       if (response.ok && data.success) {
-        console.log('Removing item from state:', itemId);
-        setItems(prevItems => {
-          const newItems = prevItems.filter(item => item._id !== itemId);
-          console.log('New items state:', newItems);
-          return newItems;
-        });
-        setFilteredItems(prevItems => {
-          const newFiltered = prevItems.filter(item => item._id !== itemId);
-          console.log('New filtered items state:', newFiltered);
-          return newFiltered;
-        });
+        console.log('Successfully deleted, updating state');
+        setItems(prevItems => prevItems.filter(item => item._id !== itemId));
+        setFilteredItems(prevItems => prevItems.filter(item => item._id !== itemId));
         setDeleteModal({ isOpen: false, itemId: '', itemName: '' });
+        fetchItems();
       } else {
         setError(`Failed to delete item: ${data.message || response.statusText}`);
       }
@@ -193,6 +188,14 @@ function App() {
     setDeleteModal({ isOpen: false, itemId: '', itemName: '' });
   };
 
+  const openItemModal = (item: Item) => {
+    setSelectedItem(item);
+  };
+
+  const closeItemModal = () => {
+    setSelectedItem(null);
+  };
+
   useEffect(() => {
     if (isAuthenticated && token) {
       fetchItems();
@@ -205,26 +208,43 @@ function App() {
 
   return (
     <div className="App">
-      <h1>Local Data Lister</h1>
+      {/* Header with just title and logout */}
+      <header className="app-header">
+        <h1>Local Data Lister</h1>
+        <button 
+          className="btn btn-secondary" 
+          onClick={() => {
+            setToken('');
+            setIsAuthenticated(false);
+            localStorage.removeItem('token');
+          }}
+        >
+          Logout
+        </button>
+      </header>
+
       {error && (
-        <div className="no-results" style={{ color: 'var(--text-primary)', background: '#ffe5e5' }}>
+        <div className="error">
           Error: {error}
         </div>
       )}
-      <AddItemForm onItemAdded={fetchItems} token={token} setError={setError} />
-      <div className="filter-container">
-        <input
-          type="text"
-          placeholder="Filter by name or type..."
-          value={filterValue}
-          onChange={handleFilterChange}
-        />
-        <button className="filter-button" onClick={() => applyFilterAndSort()}>
-          Filter
-        </button>
-      </div>
-      <div className="controls-container">
-        <div className="sort-buttons">
+
+      {/* Controls row with filter, sort, and add item */}
+      <div className="controls-row">
+        <div className="filter-section">
+          <input
+            type="text"
+            placeholder="Filter by name or type..."
+            value={filterValue}
+            onChange={handleFilterChange}
+            className="filter-input"
+          />
+          <button className="filter-button" onClick={() => applyFilterAndSort()}>
+            Filter
+          </button>
+        </div>
+        
+        <div className="action-buttons">
           <button
             className={`sort-button ${sortField === 'name' ? 'active' : ''}`}
             onClick={() => handleSort('name')}
@@ -237,30 +257,43 @@ function App() {
           >
             {getSortButtonText('type')}
           </button>
+          <button 
+            className="btn btn-primary add-item-btn"
+            onClick={() => setShowAddForm(!showAddForm)}
+          >
+            {showAddForm ? 'Cancel' : '+ Add Item'}
+          </button>
         </div>
       </div>
+
+      {/* Conditionally show Add Item Form */}
+      {showAddForm && (
+        <AddItemForm onItemAdded={() => {
+          fetchItems();
+          setShowAddForm(false);
+        }} token={token} setError={setError} />
+      )}
+
       <div className="status-bar">
         <span>Showing {filteredItems.length} of {items.length} items</span>
       </div>
+
       <div className="items-container">
         {loading ? (
           <div className="no-results loading">Loading items...</div>
         ) : filteredItems.length > 0 ? (
           filteredItems.map(item => (
-            <div key={item._id} className="item">
-              <div className="flex justify-between items-start">
-                <h2>{item.name || 'Unnamed'}</h2>
-                <button
-                  className="sort-button"
-                  style={{ background: '#e53e3e', color: 'white', padding: '6px 12px' }}
-                  onClick={() => openDeleteModal(item._id, item.name || 'Unnamed')}
-                >
-                  Delete
-                </button>
-              </div>
+            <div 
+              key={item._id} 
+              className="item"
+              data-type={item.type}
+              onClick={() => openItemModal(item)}
+              style={{ cursor: 'pointer' }}
+            >
+              <h2>{item.name || 'Unnamed'}</h2>
               <p><strong>Type:</strong> {item.type || 'N/A'}</p>
               <p>{item.details || 'No details'}</p>
-              <p><small>Created: {formatDate(item.createdAt)}</small></p>
+              <small>Created: {formatDate(item.createdAt)}</small>
             </div>
           ))
         ) : (
@@ -269,6 +302,52 @@ function App() {
           </div>
         )}
       </div>
+
+      {/* Item Detail Modal */}
+      {selectedItem && (
+        <div className="modal-overlay" onClick={closeItemModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>{selectedItem.name || 'Unnamed'}</h2>
+              <button 
+                className="modal-close-btn"
+                onClick={closeItemModal}
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="item-detail-row">
+                <strong>Type:</strong> {selectedItem.type || 'N/A'}
+              </div>
+              <div className="item-detail-row">
+                <strong>Details:</strong> {selectedItem.details || 'No details'}
+              </div>
+              <div className="item-detail-row">
+                <strong>Created:</strong> {formatDate(selectedItem.createdAt)}
+              </div>
+            </div>
+            <div className="modal-actions">
+              <button 
+                className="btn btn-secondary"
+                onClick={closeItemModal}
+              >
+                Close
+              </button>
+              <button 
+                className="btn btn-danger"
+                onClick={() => {
+                  closeItemModal();
+                  openDeleteModal(selectedItem._id, selectedItem.name || 'Unnamed');
+                }}
+              >
+                Delete Item
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <DeleteItemModal
         isOpen={deleteModal.isOpen}
         onClose={closeDeleteModal}
