@@ -6,6 +6,10 @@ async function addNewPlaces() {
     const db = await connect();
     const collection = db.collection('items');
     
+    // Check if places already exist to avoid duplicates
+    const existingCount = await collection.countDocuments();
+    console.log(`Current items in database: ${existingCount}`);
+    
     console.log('Preparing to add new places...');
     const newPlaces = [
       {
@@ -60,21 +64,35 @@ async function addNewPlaces() {
       }
     ];
     
-    console.log(`Attempting to insert ${newPlaces.length} new places...`);
-    const result = await collection.insertMany(newPlaces);
+    // Check for duplicates by name
+    const existingNames = await collection.distinct('name');
+    const placesToAdd = newPlaces.filter(place => !existingNames.includes(place.name));
+    
+    if (placesToAdd.length === 0) {
+      console.log('All places already exist in the database.');
+      return { success: true, added: 0, message: 'All places already exist' };
+    }
+    
+    console.log(`Attempting to insert ${placesToAdd.length} new places...`);
+    const result = await collection.insertMany(placesToAdd);
     console.log(`Success! ${result.insertedCount} new places added to the database.`);
     
     console.log('New places added:');
-    newPlaces.forEach((place, index) => {
+    placesToAdd.forEach((place, index) => {
       console.log(`${index + 1}. ${place.name} (${place.type})`);
     });
     
-    process.exit(0);
+    return { success: true, added: result.insertedCount, places: placesToAdd };
   } catch (error) {
     console.error('Error adding places:', error);
-    process.exit(1);
+    return { success: false, error: error.message };
   }
 }
 
+// Export the function for use in other files
+module.exports = { addNewPlaces };
 
-addNewPlaces();
+// Only run directly if this file is executed directly
+if (require.main === module) {
+  addNewPlaces().then(() => process.exit(0)).catch(() => process.exit(1));
+}
