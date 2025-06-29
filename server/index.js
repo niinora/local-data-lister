@@ -8,22 +8,11 @@ const path = require('path');
 const app = express();
 
 app.use(express.json());
-<<<<<<< HEAD
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Headers', 'Content-Type');
   res.header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
   next();
-=======
-app.use(cors());
-
-// Serve static files from parent directory
-app.use(express.static(path.join(__dirname, '..')));
-
-// Serve index.html at root
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'index.html'));
->>>>>>> 0ff4c1966f4b14dcb45b46a307c806f3c25f95e5
 });
 
 const itemSchema = Joi.object({
