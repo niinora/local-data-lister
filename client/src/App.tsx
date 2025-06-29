@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import AddItemForm from './components/AddItemForm';
 import DeleteItemModal from './components/DeleteItemModal';
+import LoginPage from './components/LoginPage';
 import './App.css';
 
 interface Item {
@@ -20,7 +21,7 @@ function App() {
   const [filterValue, setFilterValue] = useState('');
   const [sortField, setSortField] = useState<SortField>('none');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [token, setToken] = useState<string>('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,14 +32,14 @@ function App() {
   });
   const [deleteLoading, setDeleteLoading] = useState(false);
 
-  const login = async () => {
+  const login = async (email: string) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch('http://localhost:5000/login', {
+      const response = await fetch('http://localhost:5000/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: 'admin', password: 'pass' }),
+        body: JSON.stringify({ email }),
       });
       const data = await response.json();
       console.log('Login response:', data);
@@ -46,8 +47,7 @@ function App() {
         setToken(data.token);
         setIsAuthenticated(true);
       } else {
-        setError(`Login failed: ${data.error || response.statusText}`);
-        setIsAuthenticated(false);
+        throw new Error(data.error || 'Login failed');
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -60,7 +60,7 @@ function App() {
 
   const fetchItems = async () => {
     if (!token) {
-      setError('No authentication token. Please refresh the page.');
+      setError('No authentication token. Please log in.');
       return;
     }
     try {
@@ -93,18 +93,31 @@ function App() {
   };
 
   const deleteItem = async (itemId: string) => {
+    console.log('Attempting to delete item with ID:', itemId);
     try {
       setDeleteLoading(true);
       setError(null);
       const response = await fetch(`http://localhost:5000/api/items/${itemId}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` },
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
       });
       const data = await response.json();
       console.log('Delete response:', data);
       if (response.ok && data.success) {
-        setItems(items.filter(item => item._id !== itemId));
-        setFilteredItems(filteredItems.filter(item => item._id !== itemId));
+        console.log('Removing item from state:', itemId);
+        setItems(prevItems => {
+          const newItems = prevItems.filter(item => item._id !== itemId);
+          console.log('New items state:', newItems);
+          return newItems;
+        });
+        setFilteredItems(prevItems => {
+          const newFiltered = prevItems.filter(item => item._id !== itemId);
+          console.log('New filtered items state:', newFiltered);
+          return newFiltered;
+        });
         setDeleteModal({ isOpen: false, itemId: '', itemName: '' });
       } else {
         setError(`Failed to delete item: ${data.message || response.statusText}`);
@@ -112,6 +125,7 @@ function App() {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       setError(`Delete error: ${errorMessage}`);
+      console.error('Delete error details:', error);
     } finally {
       setDeleteLoading(false);
     }
@@ -171,6 +185,7 @@ function App() {
   };
 
   const openDeleteModal = (itemId: string, itemName: string) => {
+    console.log('Opening delete modal for item:', itemId, itemName);
     setDeleteModal({ isOpen: true, itemId, itemName });
   };
 
@@ -179,17 +194,23 @@ function App() {
   };
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      login();
-    } else if (token) {
+    if (isAuthenticated && token) {
       fetchItems();
     }
   }, [isAuthenticated, token]);
 
+  if (!isAuthenticated) {
+    return <LoginPage onLogin={login} />;
+  }
+
   return (
     <div className="App">
       <h1>Local Data Lister</h1>
-      {error && <div className="no-results" style={{ color: 'var(--text-primary)' }}>Error: {error}</div>}
+      {error && (
+        <div className="no-results" style={{ color: 'var(--text-primary)', background: '#ffe5e5' }}>
+          Error: {error}
+        </div>
+      )}
       <AddItemForm onItemAdded={fetchItems} token={token} setError={setError} />
       <div className="filter-container">
         <input

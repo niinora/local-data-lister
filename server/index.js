@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 5000;
 
 // CORS configuration
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173', // Updated to match Vite's default port
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
   credentials: true,
   methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -29,6 +29,10 @@ const itemSchema = Joi.object({
   name: Joi.string().required(),
   type: Joi.string().required(),
   details: Joi.string().required()
+});
+
+const loginSchema = Joi.object({
+  email: Joi.string().email().required()
 });
 
 const authenticate = (req, res, next) => {
@@ -152,15 +156,22 @@ app.delete('/api/items/:id', authenticate, async (req, res) => {
   }
 });
 
-app.post('/login', (req, res) => {
-  const { username, password } = req.body;
-  if (username === 'admin' && password === 'pass') {
+app.post('/api/login', async (req, res) => {
+  try {
+    const { email } = req.body;
+    const { error } = loginSchema.validate({ email });
+    if (error) {
+      return res.status(400).json({ error: error.details[0].message });
+    }
+    // In production, verify email against a user database
+    // For simplicity, accept any valid email format
     res.status(200).json({
       token: 'test-jwt-token-12345',
-      user: { username: 'admin' }
+      user: { email }
     });
-  } else {
-    res.status(401).json({ error: 'Invalid credentials' });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ error: 'Server error' });
   }
 });
 
