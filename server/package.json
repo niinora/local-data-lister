@@ -3,7 +3,11 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "start": "node index.js",
+    "build": "if not exist dist mkdir dist && copy index.js dist\\index.js && copy package*.json dist\\",
+    "dev": "nodemon index.js",
+    "postbuild": "echo 'Build complete'"
   },
   "jest": {
     "testEnvironment": "node"
@@ -14,6 +18,7 @@
   "dependencies": {
     "aws-serverless-express": "^3.4.0",
     "cors": "^2.8.5",
+    "dotenv": "^17.0.0",
     "express": "^5.1.0",
     "fs": "^0.0.1-security",
     "joi": "^17.13.3",
