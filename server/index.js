@@ -12,9 +12,9 @@ const PORT = process.env.PORT || 5000;
 
 // CORS configuration
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173', // Updated to match Vite's default port
   credentials: true,
-  methods: ['GET', 'POST', 'OPTIONS'],
+  methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
@@ -51,7 +51,11 @@ async function importData() {
     if (count === 0) {
       try {
         const data = JSON.parse(fs.readFileSync('data.json', 'utf8'));
-        await collection.insertMany(data);
+        await collection.insertMany(data.map(item => ({
+          ...item,
+          _id: item._id || Date.now().toString(),
+          createdAt: item.createdAt || new Date().toISOString(),
+        })));
         console.log('Data imported from data.json');
       } catch (error) {
         console.log('No data.json found or invalid format, skipping initial import');
@@ -105,7 +109,7 @@ app.post('/api/items', authenticate, async (req, res) => {
 
     const db = await connect();
     const newItem = {
-      _id: Date.now().toString(), // Using _id for MongoDB compatibility
+      _id: Date.now().toString(),
       name,
       type,
       details,
@@ -126,6 +130,25 @@ app.post('/api/items', authenticate, async (req, res) => {
       success: false,
       message: 'Server error'
     });
+  }
+});
+
+app.delete('/api/items/:id', authenticate, async (req, res) => {
+  try {
+    const db = await connect();
+    const collection = db.collection('items');
+    const { id } = req.params;
+    console.log('Attempting to delete item with _id:', id);
+    const result = await collection.deleteOne({ _id: id });
+    console.log('Delete result:', result);
+    if (result.deletedCount === 1) {
+      res.json({ success: true, message: 'Item deleted successfully' });
+    } else {
+      res.status(404).json({ success: false, message: 'Item not found' });
+    }
+  } catch (error) {
+    console.error('Error deleting item:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 

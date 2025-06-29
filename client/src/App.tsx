@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import AddItemForm from './components/AddItemForm';
+import DeleteItemModal from './components/DeleteItemModal';
 import './App.css';
 
 interface Item {
@@ -23,6 +24,12 @@ function App() {
   const [token, setToken] = useState<string>('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; itemId: string; itemName: string }>({
+    isOpen: false,
+    itemId: '',
+    itemName: '',
+  });
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const login = async () => {
     try {
@@ -35,7 +42,7 @@ function App() {
       });
       const data = await response.json();
       console.log('Login response:', data);
-      if (response.ok) {
+      if (response.ok && data.token) {
         setToken(data.token);
         setIsAuthenticated(true);
       } else {
@@ -52,6 +59,10 @@ function App() {
   };
 
   const fetchItems = async () => {
+    if (!token) {
+      setError('No authentication token. Please refresh the page.');
+      return;
+    }
     try {
       setLoading(true);
       setError(null);
@@ -67,14 +78,12 @@ function App() {
         setItems(data);
         setFilteredItems(data);
       } else {
-        console.error('Invalid data format:', data);
+        setError(`Failed to fetch items: ${data.message || response.statusText}`);
         setItems([]);
         setFilteredItems([]);
-        setError('Failed to fetch items: Invalid data format');
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error('Fetch error:', error);
       setError(`Fetch error: ${errorMessage}`);
       setItems([]);
       setFilteredItems([]);
@@ -83,12 +92,37 @@ function App() {
     }
   };
 
+  const deleteItem = async (itemId: string) => {
+    try {
+      setDeleteLoading(true);
+      setError(null);
+      const response = await fetch(`http://localhost:5000/api/items/${itemId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      const data = await response.json();
+      console.log('Delete response:', data);
+      if (response.ok && data.success) {
+        setItems(items.filter(item => item._id !== itemId));
+        setFilteredItems(filteredItems.filter(item => item._id !== itemId));
+        setDeleteModal({ isOpen: false, itemId: '', itemName: '' });
+      } else {
+        setError(`Failed to delete item: ${data.message || response.statusText}`);
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      setError(`Delete error: ${errorMessage}`);
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   const applyFilterAndSort = (searchValue?: string) => {
     const searchTerm = (searchValue ?? filterValue).toLowerCase().trim();
     let filtered = items;
     if (searchTerm) {
       filtered = items.filter(item =>
-        (item.type?.toLowerCase().includes(searchTerm) || item.name?.toLowerCase().includes(searchTerm))
+        (item.name?.toLowerCase().includes(searchTerm) || item.type?.toLowerCase().includes(searchTerm))
       );
     }
     const sorted = sortItems(filtered, sortField, sortOrder);
@@ -134,6 +168,14 @@ function App() {
       return `Sort by ${field} ${sortOrder === 'asc' ? '↑' : '↓'}`;
     }
     return `Sort by ${field}`;
+  };
+
+  const openDeleteModal = (itemId: string, itemName: string) => {
+    setDeleteModal({ isOpen: true, itemId, itemName });
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModal({ isOpen: false, itemId: '', itemName: '' });
   };
 
   useEffect(() => {
@@ -185,7 +227,16 @@ function App() {
         ) : filteredItems.length > 0 ? (
           filteredItems.map(item => (
             <div key={item._id} className="item">
-              <h2>{item.name || 'Unnamed'}</h2>
+              <div className="flex justify-between items-start">
+                <h2>{item.name || 'Unnamed'}</h2>
+                <button
+                  className="sort-button"
+                  style={{ background: '#e53e3e', color: 'white', padding: '6px 12px' }}
+                  onClick={() => openDeleteModal(item._id, item.name || 'Unnamed')}
+                >
+                  Delete
+                </button>
+              </div>
               <p><strong>Type:</strong> {item.type || 'N/A'}</p>
               <p>{item.details || 'No details'}</p>
               <p><small>Created: {formatDate(item.createdAt)}</small></p>
@@ -197,6 +248,13 @@ function App() {
           </div>
         )}
       </div>
+      <DeleteItemModal
+        isOpen={deleteModal.isOpen}
+        onClose={closeDeleteModal}
+        onConfirm={() => deleteItem(deleteModal.itemId)}
+        itemName={deleteModal.itemName}
+        loading={deleteLoading}
+      />
     </div>
   );
 }
