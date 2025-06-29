@@ -23,32 +23,32 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const login = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch('http://localhost:5000/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: 'admin', password: 'pass' })
-      });
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Login response:', data);
-        setToken(data.token);
-        setIsAuthenticated(true);
-        console.log('Token set:', data.token);
-      } else {
-        const errorData = await response.json();
-        console.error('Login failed:', errorData);
-        setError(`Login failed: ${errorData.error || response.statusText}`);
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      setError('Login error: Network or server issue');
-    } finally {
-      setLoading(false);
+const login = async () => {
+  try {
+    setLoading(true);
+    setError(null); // Clear previous errors
+    const response = await fetch('http://localhost:5000/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: 'admin', password: 'pass' }),
+    });
+    if (response.ok) {
+      const data = await response.json();
+      setToken(data.token);
+      setIsAuthenticated(true);
+    } else {
+      const errorData = await response.json();
+      setError(`Login failed: ${errorData.error || response.statusText}`);
+      setIsAuthenticated(false);
     }
-  };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    setError(`Login error: ${errorMessage}. Ensure the backend server is running.`);
+    setIsAuthenticated(false);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const fetchItems = async () => {
     try {
