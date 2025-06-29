@@ -48,13 +48,17 @@ function App() {
   const [sortField, setSortField] = useState<SortField>('none');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
   const [loading, setLoading] = useState(true);
-  const [token, setToken] = useState<string>('');
+  const [token, setToken] = useState<string>(localStorage.getItem('token') || '');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showDetails, setShowDetails] = useState(false); // NEW: Toggle for details
+
+  // Replace with your Render backend URL after deployment
+  const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
 
   const login = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:5000/login', {
+      const response = await fetch(`${apiUrl.replace('/api', '')}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: 'admin', password: 'pass' })
@@ -62,6 +66,7 @@ function App() {
       if (response.ok) {
         const data = await response.json();
         setToken(data.token);
+        localStorage.setItem('token', data.token); // Store token in localStorage
         setIsAuthenticated(true);
         console.log('Login successful, token:', data.token);
       } else {
@@ -75,23 +80,34 @@ function App() {
   };
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      login(); // Auto-login on mount
-    } else if (token) {
+    // Check if we have a token from localStorage
+    if (token) {
+      setIsAuthenticated(true);
+    } else if (!isAuthenticated) {
+      login(); // Auto-login on mount if no token
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isAuthenticated && token) {
       async function fetchData() {
         try {
           setLoading(true);
-          const response = await fetch('http://localhost:5000/api/items', {
-            headers: { 'Authorization': `Bearer ${token}` }
+          const response = await fetch(`${apiUrl}/items`, {
+            headers: { 
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
           });
           if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
           const data = await response.json();
           console.log('Fetched data:', data);
-          if (Array.isArray(data)) {
-            setItems(data);
-            setFilteredItems(data);
+          const itemsData = data.data || data;
+          if (Array.isArray(itemsData)) {
+            setItems(itemsData);
+            setFilteredItems(itemsData);
           } else {
-            console.error('Data is not an array:', data);
+            console.error('Data is not an array:', itemsData);
             setItems([]);
             setFilteredItems([]);
           }
@@ -103,7 +119,7 @@ function App() {
       }
       fetchData();
     }
-  }, [isAuthenticated, token]);
+  }, [isAuthenticated, token, apiUrl]);
 
   const sortItems = (itemsToSort: Item[], field: SortField, order: SortOrder) => {
     if (field === 'none') return itemsToSort;
@@ -210,6 +226,14 @@ function App() {
           </button>
         </div>
         
+        {/* NEW: Details Toggle Button */}
+        <button 
+          className="details-toggle-button" 
+          onClick={() => setShowDetails(!showDetails)}
+        >
+          {showDetails ? 'Hide Details' : 'Show Details'}
+        </button>
+        
         <button className="clear-button" onClick={clearFiltersAndSort}>
           Clear All
         </button>
@@ -223,6 +247,10 @@ function App() {
             {sortField !== 'none' && ` • Sorted by ${sortField} (${sortOrder})`}
           </span>
         )}
+        {/* NEW: Show details status */}
+        <span className="details-status">
+          • Details: {showDetails ? 'Shown' : 'Hidden'}
+        </span>
       </div>
 
       <div className="items-container">
@@ -233,7 +261,8 @@ function App() {
             <div key={item.id} className="item">
               <h2>{item.name}</h2>
               <p><strong>Type:</strong> {item.type}</p>
-              <p>{item.details}</p>
+              {/* NEW: Conditional details display */}
+              {showDetails && <p><strong>Details:</strong> {item.details}</p>}
             </div>
           ))
         ) : (
