@@ -1,8 +1,5 @@
 {
-    "builds": [
-        {
-            "src": "index.html",
-            "use": "@vercel/static"
-        }
-    ]
+  "framework": "react",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist"
 }
