@@ -12,7 +12,7 @@ interface Item {
   createdAt?: string;
 }
 
-type SortField = 'name' | 'type' | 'none';
+type SortField = 'name' | 'type' | 'createdAt' | 'none';
 type SortOrder = 'asc' | 'desc';
 
 function App() {
@@ -142,9 +142,14 @@ function App() {
   const sortItems = (itemsToSort: Item[], field: SortField, order: SortOrder) => {
     if (field === 'none') return itemsToSort;
     return [...itemsToSort].sort((a, b) => {
+      if (field === 'createdAt') {
+        const aDate = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const bDate = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return order === 'asc' ? aDate - bDate : bDate - aDate;
+      }
       const aValue = a[field]?.toLowerCase() || '';
       const bValue = b[field]?.toLowerCase() || '';
-      return order === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+      return order === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(bValue);
     });
   };
 
@@ -256,6 +261,12 @@ function App() {
             onClick={() => handleSort('type')}
           >
             {getSortButtonText('type')}
+          </button>
+          <button
+            className={`sort-button ${sortField === 'createdAt' ? 'active' : ''}`}
+            onClick={() => handleSort('createdAt')}
+          >
+            {getSortButtonText('createdAt')}
           </button>
           <button 
             className="btn btn-primary add-item-btn"
