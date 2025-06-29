@@ -13,8 +13,6 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ onItemAdded, token, setError 
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const apiUrl = 'http://localhost:5000/api';
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!token) {
@@ -26,7 +24,7 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ onItemAdded, token, setError 
     setSuccess(null);
 
     try {
-      const response = await fetch(`${apiUrl}/items`, {
+      const response = await fetch('/api/items', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -54,54 +52,40 @@ const AddItemForm: React.FC<AddItemFormProps> = ({ onItemAdded, token, setError 
   };
 
   return (
-    <form className="filter-container" style={{ background: 'var(--bg-primary)', marginBottom: '2rem' }} onSubmit={handleSubmit}>
-      <h2 className="app-title">Add New Item</h2>
-      {success && <div className="status-bar" style={{ background: 'var(--success-gradient)' }}>{success}</div>}
-      <div style={{ marginBottom: '1rem' }}>
-        <label htmlFor="name" className="block text-sm font-semibold text-[var(--text-primary)]">Name</label>
+    <div className="item-form">
+      <h2>Add New Item</h2>
+      {success && <div style={{ background: '#d1fae5', color: '#065f46', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>{success}</div>}
+      <form onSubmit={handleSubmit}>
         <input
           type="text"
-          id="name"
           placeholder="Enter item name"
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
-          className="w-full"
         />
-      </div>
-      <div style={{ marginBottom: '1rem' }}>
-        <label htmlFor="type" className="block text-sm font-semibold text-[var(--text-primary)]">Type</label>
         <input
           type="text"
-          id="type"
           placeholder="Enter item type"
           value={type}
           onChange={(e) => setType(e.target.value)}
           required
-          className="w-full"
         />
-      </div>
-      <div style={{ marginBottom: '1rem' }}>
-        <label htmlFor="details" className="block text-sm font-semibold text-[var(--text-primary)]">Details</label>
         <textarea
-          id="details"
           placeholder="Enter item details"
           value={details}
           onChange={(e) => setDetails(e.target.value)}
           required
-          className="w-full"
-          style={{ minHeight: '80px' }}
         />
-      </div>
-      <button
-        type="submit"
-        disabled={loading}
-        className="filter-button"
-        style={{ width: '100%' }}
-      >
-        {loading ? 'Adding...' : 'Add Item'}
-      </button>
-    </form>
+        <button
+          type="submit"
+          disabled={loading}
+          className="btn btn-primary"
+          style={{ width: '100%' }}
+        >
+          {loading ? 'Adding...' : 'Add Item'}
+        </button>
+      </form>
+    </div>
   );
 };
 

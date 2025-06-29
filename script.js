@@ -1,20 +1,20 @@
-const API_BASE = 'http://localhost:5000/api';
+#!/usr/bin/env node
 
-class DataLister {
-    constructor() {
-        this.currentSort = { by: 'name', order: 'asc' };
-        this.currentFilter = '';
-        this.searchQuery = '';
-        this.allItems = [];
-        this.init();
-    }
-
-    init() {
-        this.bindEvents();
-        this.loadItems();
-        this.loadTypes();
-    }
-
+console.log('🚀 Local Data Lister - Application Launcher');
+console.log('==========================================');
+console.log('');
+console.log('📱 Frontend (React): http://localhost:5173');
+console.log('🔧 Backend (API):    http://localhost:5000');
+console.log('');
+console.log('To start the application:');
+console.log('1. Backend:  cd server && npm start');
+console.log('2. Frontend: cd client && npm run dev');
+console.log('');
+console.log('Or use the helper scripts:');
+console.log('- node run.js     (start both servers)');
+console.log('- node start.js   (setup + start)');
+console.log('');
+console.log('📖 Open http://localhost:5173 in your browser');
     bindEvents() {
         // Search controls
         document.getElementById('searchInput')?.addEventListener('input', (e) => {
