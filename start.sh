@@ -14,30 +14,11 @@ if [ ! -f "server/index.js" ]; then
     exit 1
 fi
 
-# Function to open browser
-open_browser() {
-    sleep 3
-    echo "🌐 Opening Chrome browser..."
-    
-    if command -v google-chrome &> /dev/null; then
-        google-chrome "http://localhost:5000" &
-    elif command -v chrome &> /dev/null; then
-        chrome "http://localhost:5000" &
-    elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" ]]; then
-        start chrome "http://localhost:5000"
-    elif [[ "$OSTYPE" == "darwin"* ]]; then
-        open -a "Google Chrome" "http://localhost:5000"
-    else
-        echo "🌍 Please open your browser and visit: http://localhost:5000"
-    fi
-}
-
-# Start browser opening in background
-open_browser &
-
-# Start the integrated server
-echo "🌐 Starting integrated server..."
+# Start the integrated server (React app will be served separately via Vite)
+echo "🌐 Starting backend server..."
 echo "🔧 Running: node server/index.js"
-echo "🚀 Chrome will open automatically in 3 seconds..."
+echo "📱 React app: Run 'npm run dev' in a separate terminal"
+echo "🌍 Backend API: http://localhost:5000"
+echo "⏹️  Press Ctrl+C to stop the server"
 echo ""
 node server/index.js
