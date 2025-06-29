@@ -1,16 +1,29 @@
 const express = require('express');
 const fs = require('fs');
 const { connect } = require('./db');
+const { addNewPlaces } = require('./add-new-places');
 const Joi = require('joi');
-const cors = require('cors')
+const cors = require('cors');
+const path = require('path');
 const app = express();
 
 app.use(express.json());
+<<<<<<< HEAD
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Headers', 'Content-Type');
   res.header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
   next();
+=======
+app.use(cors());
+
+// Serve static files from parent directory
+app.use(express.static(path.join(__dirname, '..')));
+
+// Serve index.html at root
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'index.html'));
+>>>>>>> 0ff4c1966f4b14dcb45b46a307c806f3c25f95e5
 });
 
 const itemSchema = Joi.object({
@@ -36,9 +49,21 @@ async function importData() {
     
     const count = await collection.countDocuments();
     if (count === 0) {
-      const data = JSON.parse(fs.readFileSync('data.json'));
-      await collection.insertMany(data);
-      console.log('Data imported successfully');
+      // Try to import from data.json if it exists
+      try {
+        const data = JSON.parse(fs.readFileSync('data.json'));
+        await collection.insertMany(data);
+        console.log('Data imported from data.json');
+      } catch (error) {
+        console.log('No data.json found, skipping initial import');
+      }
+    }
+    
+    // Add new places
+    console.log('📍 Adding new places...');
+    const result = await addNewPlaces();
+    if (result.success) {
+      console.log(`✅ Places setup complete! Added ${result.added} new places.`);
     }
   } catch (error) {
     console.error('Failed to import data:', error);
@@ -50,7 +75,18 @@ app.get('/api/items', authenticate, async (req, res) => {
   try {
     const db = await connect();
     const filter = req.query.type ? { type: req.query.type } : {};
-    const items = await db.collection('items').find(filter).toArray();
+    
+    // Sorting logic
+    const sortBy = req.query.sortBy || 'name'; // default sort by name
+    const sortOrder = req.query.sortOrder === 'desc' ? -1 : 1; // default ascending
+    
+    // Validate sort field
+    const validSortFields = ['name', 'type', 'details', '_id'];
+    const sortField = validSortFields.includes(sortBy) ? sortBy : 'name';
+    
+    const sortOptions = { [sortField]: sortOrder };
+    
+    const items = await db.collection('items').find(filter).sort(sortOptions).toArray();
     res.json(items);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch items' });
@@ -89,7 +125,12 @@ app.post('/login', (req, res) => {
 async function startServer() {
   try {
     await importData(); 
-    app.listen(5000, () => console.log('Server on port 5000'));
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, () => {
+      console.log(`🌐 Server running on port ${PORT}`);
+      console.log(`🌍 Visit http://localhost:${PORT} to view the application`);
+      console.log('⏹️  Press Ctrl+C to stop the server');
+    });
   } catch (error) {
     console.error('Failed to start server:', error);
   }
