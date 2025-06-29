@@ -1,0 +1,12 @@
+Local Data Lister Deployment (June 29, 2025, 09:40 PM +04)
+- Backend URL: https://local-data-lister.onrender.com
+- Health Endpoint: https://local-data-lister.onrender.com/health
+- Login Endpoint: POST https://local-data-lister.onrender.com/api/login
+- Seed Endpoint: POST https://local-data-lister.onrender.com/api/seed
+- Reset Endpoint: POST https://local-data-lister.onrender.com/api/reset-db
+- Environment Variables Set:
+  - NODE_ENV: production
+  - MONGODB_URI: [Redacted]
+  - JWT_SECRET: test-jwt-secret-12345
+  - FRONTEND_URL: http://localhost:5173 (pending frontend deployment)
+- Notes: Resolved Bad Request on /api/login and Server error on /api/seed, verified middleware and environment variables, deployed backend successfully, tested endpoints at 09:40 PM +04.
