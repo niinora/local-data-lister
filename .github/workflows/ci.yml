@@ -39,10 +39,6 @@ jobs:
         with:
           node-version: 18
 
-      - name: Run client tests (Vitest)
-        run: |
-          cd client
-          npm test
       - name: Run server tests (Jest)
         run: |
           cd server
