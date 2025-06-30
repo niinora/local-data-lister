@@ -7,42 +7,60 @@ on:
     branches: [ master, 'feature/*' ]
 
 jobs:
-  build-and-test:
+  install-dependencies:
     runs-on: ubuntu-latest
-
     steps:
-      # 1. Checkout code
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2. Set up Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18
 
-      # 3. Install dependencies (client and server)
       - name: Install dependencies (client)
         run: |
-          cd local-data-lister/client
+          cd client
           npm install
       - name: Install dependencies (server)
         run: |
-          cd local-data-lister/server
+          cd server
           npm install
 
-      # 4. Run tests (client and server)
+  run-tests:
+    runs-on: ubuntu-latest
+    needs: install-dependencies
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
       - name: Run client tests (Vitest)
         run: |
-          cd local-data-lister/client
+          cd client
           npm test
       - name: Run server tests (Jest)
         run: |
-          cd local-data-lister/server
+          cd server
           npm test
 
-      # 5. Build frontend
+  build-frontend:
+    runs-on: ubuntu-latest
+    needs: run-tests
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
       - name: Build client
         run: |
-          cd local-data-lister/client
+          cd client
           npm run build 
