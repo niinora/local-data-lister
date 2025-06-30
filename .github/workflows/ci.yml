@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [ master, 'feature/*' ]
+  pull_request:
+    branches: [ master, 'feature/*' ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2. Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      # 3. Install dependencies (client and server)
+      - name: Install dependencies (client)
+        run: |
+          cd local-data-lister/client
+          npm install
+      - name: Install dependencies (server)
+        run: |
+          cd local-data-lister/server
+          npm install
+
+      # 4. Run tests (client and server)
+      - name: Run client tests (Vitest)
+        run: |
+          cd local-data-lister/client
+          npm test
+      - name: Run server tests (Jest)
+        run: |
+          cd local-data-lister/server
+          npm test
+
+      # 5. Build frontend
+      - name: Build client
+        run: |
+          cd local-data-lister/client
+          npm run build 
