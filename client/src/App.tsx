@@ -123,6 +123,9 @@ function App() {
   const [category, setCategory] = useState<string>(''); // New: selected category/type
   const [editMode, setEditMode] = useState(false);
   const [editFields, setEditFields] = useState<{ name: string; type: string; details: string }>({ name: '', type: '', details: '' });
+  const [theme, setTheme] = useState<'light' | 'dark'>(
+    () => (localStorage.getItem('theme') as 'light' | 'dark') || 'light'
+  );
 
   // Get unique categories from items for dropdown
   const categories = Array.from(new Set(items.map(item => item.type))).sort();
@@ -348,25 +351,40 @@ function App() {
     }
   }, [isAuthenticated, token]);
 
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
   if (!isAuthenticated) {
     return <LoginPage onLogin={login} />;
   }
 
   return (
-    <div className="App">
-      {/* Header with just title and logout */}
+    <div className={`App${theme === 'dark' ? ' dark' : ''}`}>
+      {/* Header with just title, dark mode toggle, and logout */}
       <header className="app-header">
         <h1>Local Data Lister</h1>
-        <button
-          className="btn btn-secondary"
-          onClick={() => {
-            setToken('');
-            setIsAuthenticated(false);
-            localStorage.removeItem('token');
-          }}
-        >
-          Logout
-        </button>
+        <div style={{ display: 'flex', gap: 16 }}>
+          <button
+            className="btn btn-secondary"
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            aria-label="Toggle dark mode"
+            style={{ minWidth: 40 }}
+          >
+            {theme === 'dark' ? '🌙 Dark' : '☀️ Light'}
+          </button>
+          <button
+            className="btn btn-secondary"
+            onClick={() => {
+              setToken('');
+              setIsAuthenticated(false);
+              localStorage.removeItem('token');
+            }}
+          >
+            Logout
+          </button>
+        </div>
       </header>
 
       {error && (

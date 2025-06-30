@@ -15,8 +15,154 @@
   --border-color: #e2e8f0;
   --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --shadow-medium: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  
+  --bg-main: #f8fafc;
+  --bg-card: #fff;
+  --text-main: #1a202c;
+  --text-secondary: #4a5568;
+  --border-color: #e2e8f0;
+  --modal-bg: #fff;
 }
 
+.dark,
+.App.dark,
+body.dark {
+  --bg-main: #181a20;
+  --bg-card: #23262f;
+  --text-main: #e5e7eb;
+  --text-secondary: #a1a1aa;
+  --border-color: #23262f;
+  --modal-bg: #23262f;
+  --primary-gradient: linear-gradient(135deg, #2563eb 0%, #1e293b 100%);
+  --secondary-gradient: linear-gradient(135deg, #6366f1 0%, #2563eb 100%);
+  --success-gradient: linear-gradient(135deg, #22d3ee 0%, #14b8a6 100%);
+  --warning-gradient: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
+  --neutral-gradient: linear-gradient(135deg, #334155 0%, #23262f 100%);
+}
+
+/* Make all text more readable in dark mode */
+.dark,
+.App.dark,
+body.dark {
+  color-scheme: dark;
+}
+
+.dark .app-header h1 {
+  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.dark .item h2,
+.dark .item p,
+.dark .item small,
+.dark .item p strong {
+  color: #e5e7eb !important;
+}
+
+.dark .item p strong {
+  color: #60a5fa !important;
+}
+
+.dark .item {
+  background: linear-gradient(135deg, #23262f 0%, #181a20 100%) !important;
+  border-color: #334155 !important;
+}
+
+.dark .item-detail-row {
+  background: #23262f !important;
+  color: #e5e7eb !important;
+  border-left: 4px solid #60a5fa !important;
+}
+
+.dark .modal-header h2 {
+  background: linear-gradient(90deg, #60a5fa 0%, #f3f4f6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.dark .sort-button.active {
+  background: #2563eb !important;
+  color: #fff !important;
+  border-color: #2563eb !important;
+}
+
+.dark .sort-button,
+.dark .filter-button {
+  background: #23262f !important;
+  color: #e5e7eb !important;
+  border-color: #334155 !important;
+}
+
+.dark .filter-button {
+  background: linear-gradient(90deg, #2563eb 0%, #1e293b 100%) !important;
+  color: #e5e7eb !important;
+}
+
+.dark .filter-input,
+.dark .filter-select,
+.dark input,
+.dark textarea,
+.dark select {
+  background: #181a20 !important;
+  color: #e5e7eb !important;
+  border-color: #334155 !important;
+}
+
+.dark .status-bar {
+  background: linear-gradient(90deg, #334155 0%, #1e293b 100%) !important;
+  color: #e5e7eb !important;
+  border-color: #334155 !important;
+}
+
+.dark .error {
+  background: #7f1d1d !important;
+  color: #fee2e2 !important;
+  border-color: #b91c1c !important;
+}
+
+.dark .loading, .dark .no-items {
+  background: #23262f !important;
+  color: #a1a1aa !important;
+}
+
+/* Apply background and text colors using variables */
+body, .App {
+  background: var(--bg-main) !important;
+  color: var(--text-main) !important;
+}
+
+.app-header,
+.controls-row,
+.item,
+.modal-content,
+.status-bar,
+.login-form,
+.item-form,
+.filter-section {
+  background: var(--bg-card) !important;
+  color: var(--text-main) !important;
+  border-color: var(--border-color) !important;
+}
+
+input, textarea, select {
+  background: var(--bg-card) !important;
+  color: var(--text-main) !important;
+  border-color: var(--border-color) !important;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: #3b82f6 !important;
+}
+
+.modal-content {
+  background: var(--modal-bg) !important;
+  color: var(--text-main) !important;
+}
+
+/* Global Styles */
 * {
   margin: 0;
   padding: 0;
