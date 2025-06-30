@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import DeleteItemModal from './components/DeleteItemModal';
 import LoginPage from './components/LoginPage';
 import './App.css';
@@ -126,6 +126,7 @@ function App() {
   const [theme, setTheme] = useState<'light' | 'dark'>(
     () => (localStorage.getItem('theme') as 'light' | 'dark') || 'light'
   );
+  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   // Get unique categories from items for dropdown
   const categories = Array.from(new Set(items.map(item => item.type))).sort();
@@ -345,6 +346,32 @@ function App() {
     }
   };
 
+  // Keyboard navigation for items
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (filteredItems.length === 0) return;
+      const focusedIdx = itemRefs.current.findIndex(
+        (ref) => ref && document.activeElement === ref
+      );
+      if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+        e.preventDefault();
+        const nextIdx = focusedIdx < filteredItems.length - 1 ? focusedIdx + 1 : 0;
+        itemRefs.current[nextIdx]?.focus();
+      } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+        e.preventDefault();
+        const prevIdx = focusedIdx > 0 ? focusedIdx - 1 : filteredItems.length - 1;
+        itemRefs.current[prevIdx]?.focus();
+      } else if (e.key === 'Enter' && focusedIdx !== -1) {
+        openItemModal(filteredItems[focusedIdx]);
+      } else if (e.key === 'Escape' && selectedItem) {
+        closeItemModal();
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filteredItems, selectedItem]);
+
   useEffect(() => {
     if (isAuthenticated && token) {
       fetchItems();
@@ -458,13 +485,19 @@ function App() {
         {loading ? (
           <div className="no-results loading">Loading items...</div>
         ) : filteredItems.length > 0 ? (
-          filteredItems.map(item => (
+          filteredItems.map((item, idx) => (
             <div
               key={item._id}
               className="item"
               data-type={item.type}
+              tabIndex={0}
+              ref={el => (itemRefs.current[idx] = el)}
               onClick={() => openItemModal(item)}
+              onKeyDown={e => {
+                if (e.key === 'Enter') openItemModal(item);
+              }}
               style={{ cursor: 'pointer' }}
+              aria-label={`Item: ${item.name}`}
             >
               <h2>{item.name || 'Unnamed'}</h2>
               {item.photo && (

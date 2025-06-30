@@ -519,6 +519,13 @@ textarea {
   flex-direction: column;
 }
 
+.item:focus {
+  outline: 3px solid #3b82f6;
+  box-shadow: 0 0 0 4px #93c5fd55;
+  z-index: 2;
+  position: relative;
+}
+
 .item:hover {
   box-shadow: 0 12px 32px rgba(59,130,246,0.13);
   border-color: #93c5fd;
