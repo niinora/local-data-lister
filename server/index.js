@@ -4,8 +4,6 @@ const { connect } = require('./db');
 const { addNewPlaces } = require('./add-new-places');
 const Joi = require('joi');
 const cors = require('cors');
-const { OAuth2Client } = require('google-auth-library');
-const jwt = require('jsonwebtoken');
 
 const app = express();
 
@@ -21,7 +19,21 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
+// Middleware for JSON and FormData
 app.use(express.json());
+
+// Configure multer for file uploads
+const upload = multer({
+  storage: multer.memoryStorage(), // Store file in memory as Buffer
+  limits: { fileSize: 5 * 1024 * 1024 }, // Limit file size to 5MB
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed'), false);
+    }
+  }
+});
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -31,7 +43,8 @@ app.get('/health', (req, res) => {
 const itemSchema = Joi.object({
   name: Joi.string().required(),
   type: Joi.string().required(),
-  details: Joi.string().required()
+  details: Joi.string().required(),
+  photo: Joi.string().optional() // Added photo as optional string (base64)
 });
 
 const loginSchema = Joi.object({
@@ -93,7 +106,7 @@ app.get('/api/items', authenticate, async (req, res) => {
     const filter = req.query.type ? { type: req.query.type } : {};
     const sortBy = req.query.sortBy || 'name';
     const sortOrder = req.query.sortOrder === 'desc' ? -1 : 1;
-    const validSortFields = ['name', 'type', 'details', '_id'];
+    const validSortFields = ['name', 'type', 'details', '_id', 'createdAt']; // Added createdAt
     const sortField = validSortFields.includes(sortBy) ? sortBy : 'name';
     const sortOptions = { [sortField]: sortOrder };
     const items = await db.collection('items').find(filter).sort(sortOptions).toArray();
@@ -104,7 +117,7 @@ app.get('/api/items', authenticate, async (req, res) => {
   }
 });
 
-app.post('/api/items', authenticate, async (req, res) => {
+app.post('/api/items', authenticate, upload.single('photo'), async (req, res) => {
   try {
     const { name, type, details } = req.body;
 
@@ -115,7 +128,12 @@ app.post('/api/items', authenticate, async (req, res) => {
       });
     }
 
-    const { error } = itemSchema.validate(req.body);
+    const { error } = itemSchema.validate({
+      name,
+      type,
+      details,
+      photo: req.file ? req.file.buffer.toString('base64') : undefined
+    });
     if (error) {
       return res.status(400).json({
         success: false,
@@ -129,7 +147,8 @@ app.post('/api/items', authenticate, async (req, res) => {
       name,
       type,
       details,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      photo: req.file ? `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}` : undefined
     };
 
     const result = await db.collection('items').insertOne(newItem);
