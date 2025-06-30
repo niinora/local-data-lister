@@ -121,6 +121,8 @@ function App() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [category, setCategory] = useState<string>(''); // New: selected category/type
+  const [editMode, setEditMode] = useState(false);
+  const [editFields, setEditFields] = useState<{ name: string; type: string; details: string }>({ name: '', type: '', details: '' });
 
   // Get unique categories from items for dropdown
   const categories = Array.from(new Set(items.map(item => item.type))).sort();
@@ -301,14 +303,43 @@ function App() {
   const openItemModal = (item: Item) => {
     try {
       setSelectedItem(item);
-    } catch (error) {
-      console.error('Error opening item modal:', error);
+      setEditMode(false);
+      setEditFields({ name: item.name, type: item.type, details: item.details });
+    } catch {
       setError('Failed to open item details');
     }
   };
 
   const closeItemModal = () => {
     setSelectedItem(null);
+  };
+
+  const handleEditSave = async () => {
+    if (!selectedItem) return;
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await fetch(`/api/items/${selectedItem._id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(editFields),
+      });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setEditMode(false);
+        setSelectedItem({ ...selectedItem, ...editFields });
+        fetchItems();
+      } else {
+        setError(`Failed to update item: ${data.message || response.statusText}`);
+      }
+    } catch {
+      setError('Failed to update item');
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -442,7 +473,17 @@ function App() {
         <div className="modal-overlay" onClick={closeItemModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>{selectedItem.name || 'Unnamed'}</h2>
+              {editMode ? (
+                <input
+                  type="text"
+                  value={editFields.name}
+                  onChange={e => setEditFields(f => ({ ...f, name: e.target.value }))}
+                  className="filter-input"
+                  style={{ fontSize: '1.2rem', fontWeight: 600 }}
+                />
+              ) : (
+                <h2>{selectedItem.name || 'Unnamed'}</h2>
+              )}
               <button
                 className="modal-close-btn"
                 onClick={closeItemModal}
@@ -462,10 +503,30 @@ function App() {
               )}
               <div className="modal-details">
                 <div className="item-detail-row">
-                  <strong>Type:</strong> {selectedItem.type || 'N/A'}
+                  <strong>Type:</strong>
+                  {editMode ? (
+                    <input
+                      type="text"
+                      value={editFields.type}
+                      onChange={e => setEditFields(f => ({ ...f, type: e.target.value }))}
+                      className="filter-input"
+                    />
+                  ) : (
+                    selectedItem.type || 'N/A'
+                  )}
                 </div>
                 <div className="item-detail-row">
-                  <strong>Details:</strong> {selectedItem.details || 'No details'}
+                  <strong>Details:</strong>
+                  {editMode ? (
+                    <textarea
+                      value={editFields.details}
+                      onChange={e => setEditFields(f => ({ ...f, details: e.target.value }))}
+                      className="filter-input"
+                      style={{ minHeight: 60 }}
+                    />
+                  ) : (
+                    selectedItem.details || 'No details'
+                  )}
                 </div>
                 <div className="item-detail-row">
                   <strong>Created:</strong> {formatDate(selectedItem.createdAt)}
@@ -473,21 +534,48 @@ function App() {
               </div>
             </div>
             <div className="modal-actions">
-              <button
-                className="btn btn-secondary"
-                onClick={closeItemModal}
-              >
-                Close
-              </button>
-              <button
-                className="btn btn-danger"
-                onClick={() => {
-                  closeItemModal();
-                  openDeleteModal(selectedItem._id, selectedItem.name || 'Unnamed');
-                }}
-              >
-                Delete Item
-              </button>
+              {editMode ? (
+                <>
+                  <button
+                    className="btn btn-primary"
+                    onClick={handleEditSave}
+                    disabled={loading}
+                  >
+                    {loading ? 'Saving...' : 'Save'}
+                  </button>
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => setEditMode(false)}
+                    disabled={loading}
+                  >
+                    Cancel
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    className="btn btn-secondary"
+                    onClick={closeItemModal}
+                  >
+                    Close
+                  </button>
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => setEditMode(true)}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    className="btn btn-danger"
+                    onClick={() => {
+                      closeItemModal();
+                      openDeleteModal(selectedItem._id, selectedItem.name || 'Unnamed');
+                    }}
+                  >
+                    Delete Item
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>

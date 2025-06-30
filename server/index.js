@@ -196,6 +196,42 @@ app.delete('/api/items/:id', authenticate, async (req, res) => {
   }
 });
 
+app.patch('/api/items/:id', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, type, details } = req.body;
+    if (!name || !type || !details) {
+      return res.status(400).json({ success: false, message: 'Name, type, and details are required' });
+    }
+    const db = await connect();
+    const collection = db.collection('items');
+    // Try to update by string _id first
+    let result = await collection.updateOne(
+      { _id: id },
+      { $set: { name, type, details } }
+    );
+    // If not found, try ObjectId
+    if (result.matchedCount === 0) {
+      try {
+        const { ObjectId } = require('mongodb');
+        if (ObjectId.isValid(id)) {
+          result = await collection.updateOne(
+            { _id: new ObjectId(id) },
+            { $set: { name, type, details } }
+          );
+        }
+      } catch (e) {}
+    }
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ success: false, message: 'Item not found' });
+    }
+    res.json({ success: true, message: 'Item updated successfully' });
+  } catch (error) {
+    console.error('Error updating item:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 app.post('/api/login', async (req, res) => {
   try {
     const { email } = req.body;
