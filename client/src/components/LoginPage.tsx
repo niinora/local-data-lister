@@ -1,23 +1,26 @@
 import React, { useState } from 'react';
+import { GoogleLogin } from '@react-oauth/google';
+import type { CredentialResponse } from '@react-oauth/google';
 
 interface LoginPageProps {
-  onLogin: (email: string) => Promise<void>;
+  onLogin: (credential: string) => Promise<void>;
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
-  const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleGoogleLogin = async (credentialResponse: CredentialResponse) => {
     setLoading(true);
     setError(null);
     try {
-      await onLogin(email);
-      setEmail('');
+      if (!credentialResponse.credential) {
+        throw new Error('No credential returned from Google');
+      }
+      // Send credential to backend for verification and login
+      await onLogin(credentialResponse.credential);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Login failed';
+      const errorMessage = err instanceof Error ? err.message : 'Google login failed';
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -32,23 +35,14 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
           {error}
         </div>
       )}
-      <form onSubmit={handleSubmit}>
-        <input
-          type="email"
-          placeholder="Enter your email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
+      <div style={{ display: 'flex', justifyContent: 'center', marginTop: 24 }}>
+        <GoogleLogin
+          onSuccess={handleGoogleLogin}
+          onError={() => setError('Google login failed')}
         />
-        <button
-          type="submit"
-          disabled={loading}
-          className="btn btn-primary"
-          style={{ width: '100%' }}
-        >
-          {loading ? 'Logging in...' : 'Log In'}
-        </button>
-      </form>
+        {/* Optionally show loading indicator */}
+        {loading && <span style={{ marginLeft: 12 }}>Loading...</span>}
+      </div>
     </div>
   );
 };

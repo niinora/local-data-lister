@@ -121,22 +121,22 @@ function App() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
 
-  const login = async (email: string) => {
+  const login = async (credential: string) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch('/api/login', {
+      const response = await fetch('/api/google-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ credential }),
       });
       const data = await response.json();
-      console.log('Login response:', data);
+      console.log('Google login response:', data);
       if (response.ok && data.token) {
         setToken(data.token);
         setIsAuthenticated(true);
       } else {
-        throw new Error(data.error || 'Login failed');
+        throw new Error(data.error || 'Google login failed');
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -308,8 +308,8 @@ function App() {
       {/* Header with just title and logout */}
       <header className="app-header">
         <h1>Local Data Lister</h1>
-        <button 
-          className="btn btn-secondary" 
+        <button
+          className="btn btn-secondary"
           onClick={() => {
             setToken('');
             setIsAuthenticated(false);
@@ -340,7 +340,7 @@ function App() {
             Filter
           </button>
         </div>
-        
+
         <div className="action-buttons">
           <button
             className={`sort-button ${sortField === 'name' ? 'active' : ''}`}
@@ -355,12 +355,7 @@ function App() {
             {getSortButtonText('type')}
           </button>
           <button
-            className={`sort-button ${sortField === 'createdAt' ? 'active' : ''}`}
-            onClick={() => handleSort('createdAt')}
-          >
-            {getSortButtonText('createdAt')}
-          </button>
-          <button 
+
             className="btn btn-primary add-item-btn"
             onClick={() => setShowAddForm(!showAddForm)}
           >
@@ -386,8 +381,8 @@ function App() {
           <div className="no-results loading">Loading items...</div>
         ) : filteredItems.length > 0 ? (
           filteredItems.map(item => (
-            <div 
-              key={item._id} 
+            <div
+              key={item._id}
               className="item"
               data-type={item.type}
               onClick={() => openItemModal(item)}
@@ -419,7 +414,7 @@ function App() {
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>{selectedItem.name || 'Unnamed'}</h2>
-              <button 
+              <button
                 className="modal-close-btn"
                 onClick={closeItemModal}
               >
@@ -449,13 +444,13 @@ function App() {
               </div>
             </div>
             <div className="modal-actions">
-              <button 
+              <button
                 className="btn btn-secondary"
                 onClick={closeItemModal}
               >
                 Close
               </button>
-              <button 
+              <button
                 className="btn btn-danger"
                 onClick={() => {
                   closeItemModal();
