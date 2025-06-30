@@ -120,6 +120,10 @@ function App() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+  const [category, setCategory] = useState<string>(''); // New: selected category/type
+
+  // Get unique categories from items for dropdown
+  const categories = Array.from(new Set(items.map(item => item.type))).sort();
 
   const login = async (credential: string) => {
     try {
@@ -213,17 +217,24 @@ function App() {
     }
   };
 
-  const applyFilterAndSort = (searchValue?: string) => {
+  // Update filter logic to combine category and keyword
+  const applyFilterAndSort = (searchValue?: string, selectedCategory?: string) => {
     const searchTerm = (searchValue ?? filterValue).toLowerCase().trim();
+    const cat = selectedCategory ?? category;
     let filtered = items;
+
+    if (cat) {
+      filtered = filtered.filter(item => item.type === cat);
+    }
     if (searchTerm) {
-      filtered = items.filter(item =>
-        (item.name?.toLowerCase().includes(searchTerm) || item.type?.toLowerCase().includes(searchTerm))
+      filtered = filtered.filter(item =>
+        item.name?.toLowerCase().includes(searchTerm) ||
+        item.type?.toLowerCase().includes(searchTerm) ||
+        item.details?.toLowerCase().includes(searchTerm)
       );
     }
     const sorted = sortItems(filtered, sortField, sortOrder);
     setFilteredItems(sorted);
-    console.log('Filtered and sorted items:', sorted);
   };
 
   const sortItems = (itemsToSort: Item[], field: SortField, order: SortOrder) => {
@@ -240,10 +251,17 @@ function App() {
     });
   };
 
+  // Update handlers to support category
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setFilterValue(value);
-    applyFilterAndSort(value);
+    applyFilterAndSort(value, category);
+  };
+
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    setCategory(value);
+    applyFilterAndSort(filterValue, value);
   };
 
   const handleSort = (field: SortField) => {
@@ -326,12 +344,23 @@ function App() {
         </div>
       )}
 
-      {/* Controls row with filter, sort, and add item */}
+      {/* Controls row with filter, category, sort, and add item */}
       <div className="controls-row">
         <div className="filter-section">
+          <select
+            value={category}
+            onChange={handleCategoryChange}
+            className="filter-select"
+            style={{ minWidth: 120 }}
+          >
+            <option value="">All Categories</option>
+            {categories.map(cat => (
+              <option key={cat} value={cat}>{cat}</option>
+            ))}
+          </select>
           <input
             type="text"
-            placeholder="Filter by name or type..."
+            placeholder="Filter by name, type, or details..."
             value={filterValue}
             onChange={handleFilterChange}
             className="filter-input"
