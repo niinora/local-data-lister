@@ -120,13 +120,14 @@ function App() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
-  const [category, setCategory] = useState<string>(''); // New: selected category/type
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]); // New: selected categories/types
   const [editMode, setEditMode] = useState(false);
   const [editFields, setEditFields] = useState<{ name: string; type: string; details: string }>({ name: '', type: '', details: '' });
   const [theme, setTheme] = useState<'light' | 'dark'>(
     () => (localStorage.getItem('theme') as 'light' | 'dark') || 'light'
   );
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [showCategorySelect, setShowCategorySelect] = useState(false); // <-- Add this line if missing
 
   // Get unique categories from items for dropdown
   const categories = Array.from(new Set(items.map(item => item.type))).sort();
@@ -224,13 +225,13 @@ function App() {
   };
 
   // Update filter logic to combine category and keyword
-  const applyFilterAndSort = (searchValue?: string, selectedCategory?: string) => {
+  const applyFilterAndSort = (searchValue?: string, selectedCats?: string[]) => {
     const searchTerm = (searchValue ?? filterValue).toLowerCase().trim();
-    const cat = selectedCategory ?? category;
+    const cats = selectedCats ?? selectedCategories;
     let filtered = items;
 
-    if (cat) {
-      filtered = filtered.filter(item => item.type === cat);
+    if (cats.length > 0) {
+      filtered = filtered.filter(item => cats.includes(item.type));
     }
     if (searchTerm) {
       filtered = filtered.filter(item =>
@@ -261,13 +262,40 @@ function App() {
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setFilterValue(value);
-    applyFilterAndSort(value, category);
+    applyFilterAndSort(value, selectedCategories);
   };
 
+  // Multi-select handler: allow multiple categories to be selected without Ctrl
   const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    setCategory(value);
-    applyFilterAndSort(filterValue, value);
+    // If user clicks (not holding Ctrl), toggle the clicked option in the array
+    const clickedValue = e.target.value;
+    let newSelected: string[] = [];
+    if (selectedCategories.includes(clickedValue)) {
+      // Remove if already selected
+      newSelected = selectedCategories.filter(cat => cat !== clickedValue);
+    } else {
+      // Add if not selected
+      newSelected = [...selectedCategories, clickedValue];
+    }
+    setSelectedCategories(newSelected);
+    applyFilterAndSort(filterValue, newSelected);
+  };
+
+  // Toggle category select visibility and reset if closing
+  const handleCategoryButton = () => {
+    if (showCategorySelect) {
+      setShowCategorySelect(false);
+      setSelectedCategories([]);
+      applyFilterAndSort(filterValue, []);
+    } else {
+      setShowCategorySelect(true);
+    }
+  };
+
+  // Clear selected categories
+  const handleClearCategories = () => {
+    setSelectedCategories([]);
+    applyFilterAndSort(filterValue, []);
   };
 
   const handleSort = (field: SortField) => {
@@ -372,11 +400,17 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filteredItems, selectedItem]);
 
+  // Fix: Always show items after login, even if categories are empty
   useEffect(() => {
     if (isAuthenticated && token) {
       fetchItems();
     }
   }, [isAuthenticated, token]);
+
+  // Fix: If categories are empty, ensure filteredItems is set to items
+  useEffect(() => {
+    setFilteredItems(items);
+  }, [items]);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
@@ -423,17 +457,55 @@ function App() {
       {/* Controls row with filter, category, sort, and add item */}
       <div className="controls-row">
         <div className="filter-section">
-          <select
-            value={category}
-            onChange={handleCategoryChange}
-            className="filter-select"
-            style={{ minWidth: 120 }}
-          >
-            <option value="">All Categories</option>
-            {categories.map(cat => (
-              <option key={cat} value={cat}>{cat}</option>
-            ))}
-          </select>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 4 }}>
+            <button
+              className="filter-button"
+              type="button"
+              onClick={handleCategoryButton}
+              style={{ minWidth: 120, marginBottom: 4 }}
+            >
+              Categories
+            </button>
+            {showCategorySelect && (
+              <>
+                <button
+                  className="filter-button filter-clear-btn"
+                  type="button"
+                  onClick={handleClearCategories}
+                  style={{ marginBottom: 6, background: '#10b981' }}
+                >
+                  Clear
+                </button>
+                <div style={{ position: 'relative', minWidth: 120 }}>
+                  <select
+                    multiple
+                    value={selectedCategories}
+                    onChange={handleCategoryChange}
+                    className="filter-select"
+                    style={{ minWidth: 120, height: 40 + 22 * Math.min(categories.length, 4) }}
+                    size={Math.min(categories.length, 6) || 2}
+                  >
+                    {categories.map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                  {/* Custom clickable overlay for easier multi-select */}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '100%',
+                      zIndex: 2,
+                      background: 'transparent',
+                      pointerEvents: 'none'
+                    }}
+                  />
+                </div>
+              </>
+            )}
+          </div>
           <input
             type="text"
             placeholder="Filter by name, type, or details..."
