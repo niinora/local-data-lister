@@ -2,17 +2,19 @@
 
 ## 📋 README.md
 
-```markdown
+````markdown
 # Local Data Lister
 
 A full-stack application for managing and filtering local business data with secure authentication and real-time updates.
 
 ## 🚀 Live Application
+
 - **Frontend**: https://your-app-name.onrender.com
 - **Backend API**: https://your-api-name.onrender.com
 - **Health Check**: https://your-api-name.onrender.com/health
 
 ## 👥 Team
+
 - **Nino Ramishvili** - Frontend Developer
 - **Tamar Kristesiashvili** - Backend Developer
 
@@ -27,12 +29,14 @@ A full-stack application for managing and filtering local business data with sec
 ## 🛠️ Tech Stack
 
 ### Frontend
+
 - **React 18** with TypeScript
 - **CSS3** for styling
 - **Fetch API** for HTTP requests
 - **Local Storage** for token management
 
 ### Backend
+
 - **Node.js** with Express
 - **TypeScript** for type safety
 - **JWT** for authentication
@@ -40,6 +44,7 @@ A full-stack application for managing and filtering local business data with sec
 - **MongoDB** for data persistence
 
 ### Deployment
+
 - **Render** for both frontend and backend hosting
 - **MongoDB Atlas** for cloud database
 - **GitHub** for version control and CI/CD
@@ -47,6 +52,7 @@ A full-stack application for managing and filtering local business data with sec
 ## ⚡ Quick Start
 
 ### Prerequisites
+
 - Node.js 16+ and npm
 - Git
 - MongoDB Atlas account (for production)
@@ -54,12 +60,15 @@ A full-stack application for managing and filtering local business data with sec
 ### Local Development Setup
 
 1. **Clone the repository**
+
 ```bash
 git clone https://github.com/your-username/local-data-lister.git
 cd local-data-lister
 ```
+````
 
 2. **Set up Backend**
+
 ```bash
 cd server
 npm install
@@ -69,6 +78,7 @@ npm run dev
 ```
 
 3. **Set up Frontend** (in new terminal)
+
 ```bash
 cd client
 npm install
@@ -76,6 +86,7 @@ npm start
 ```
 
 4. **Access the application**
+
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:3001
 - Health Check: http://localhost:3001/health
@@ -83,6 +94,7 @@ npm start
 ### Environment Variables
 
 **Backend (.env)**
+
 ```env
 NODE_ENV=development
 PORT=3001
@@ -92,6 +104,7 @@ FRONTEND_URL=http://localhost:3000
 ```
 
 **Frontend (.env.local)**
+
 ```env
 REACT_APP_API_URL=http://localhost:3001/api
 ```
@@ -99,7 +112,9 @@ REACT_APP_API_URL=http://localhost:3001/api
 ## 📚 API Documentation
 
 ### Authentication
+
 All protected endpoints require a JWT token in the Authorization header:
+
 ```
 Authorization: Bearer <your-jwt-token>
 ```
@@ -107,9 +122,11 @@ Authorization: Bearer <your-jwt-token>
 ### Endpoints
 
 #### `POST /login`
+
 Authenticate user and receive JWT token.
 
 **Request Body:**
+
 ```json
 {
   "username": "admin",
@@ -118,6 +135,7 @@ Authenticate user and receive JWT token.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -127,12 +145,15 @@ Authenticate user and receive JWT token.
 ```
 
 #### `GET /api/items`
+
 Fetch all items or filter by type.
 
 **Query Parameters:**
+
 - `type` (optional): Filter items by type
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -150,9 +171,11 @@ Fetch all items or filter by type.
 ```
 
 #### `POST /api/items` 🔒
+
 Add a new item (requires authentication).
 
 **Request Body:**
+
 ```json
 {
   "name": "New Business",
@@ -162,6 +185,7 @@ Add a new item (requires authentication).
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -177,9 +201,11 @@ Add a new item (requires authentication).
 ```
 
 #### `GET /health`
+
 Health check endpoint for monitoring.
 
 **Response:**
+
 ```json
 {
   "status": "OK",
@@ -194,18 +220,21 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions.
 ## 🧪 Testing
 
 ### Backend Tests
+
 ```bash
 cd server
 npm test
 ```
 
 ### Frontend Tests
+
 ```bash
 cd client
 npm test
 ```
 
 ### E2E Tests
+
 ```bash
 cd client
 npm run test:e2e
@@ -242,24 +271,29 @@ local-data-lister/
 ### Common Issues
 
 **CORS Errors**
+
 - Ensure `FRONTEND_URL` is set correctly in backend environment
 - Check that frontend is making requests to the correct API URL
 
 **Authentication Issues**
+
 - Verify JWT token is being sent in Authorization header
 - Check that JWT_SECRET matches between environments
 
 **Database Connection**
+
 - Confirm MongoDB URI is correct and accessible
 - Ensure database user has proper permissions
 
 ### Logs and Monitoring
 
 **Render Logs:**
+
 - Backend: https://dashboard.render.com → Your service → Logs
 - Frontend: Check browser console for client-side errors
 
 **Health Monitoring:**
+
 - Use the `/health` endpoint to verify backend status
 - Set up uptime monitoring with services like UptimeRobot
 
@@ -278,10 +312,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📞 Support
 
 For support and questions:
+
 - Create an issue on GitHub
 - Contact the development team
 - Check the troubleshooting section above
-```
+
+````
 
 ---
 
@@ -339,13 +375,14 @@ Create initial data in your MongoDB collection:
     "details": "Monthly gathering for local developers and tech enthusiasts"
   }
 ]
-```
+````
 
 ## 🖥️ Backend Deployment (Render Web Service)
 
 ### 1. Prepare Backend for Deployment
 
 Ensure your `server/package.json` has:
+
 ```json
 {
   "scripts": {
@@ -362,15 +399,18 @@ Ensure your `server/package.json` has:
 ### 2. Deploy to Render
 
 1. **Go to Render Dashboard**
+
    - Visit [render.com](https://render.com)
    - Sign in with GitHub
 
 2. **Create Web Service**
+
    - Click "New" → "Web Service"
    - Connect your GitHub repository
    - Select your repository
 
 3. **Configure Service Settings**
+
    ```
    Name: local-data-lister-api
    Branch: main (or feature/development)
@@ -381,6 +421,7 @@ Ensure your `server/package.json` has:
    ```
 
 4. **Set Environment Variables**
+
    ```
    NODE_ENV=production
    PORT=3001
@@ -395,6 +436,7 @@ Ensure your `server/package.json` has:
    - Note your backend URL: `https://your-api-name.onrender.com`
 
 ### 3. Test Backend Deployment
+
 ```bash
 # Health check
 curl https://your-api-name.onrender.com/health
@@ -408,11 +450,13 @@ curl https://your-api-name.onrender.com/health
 ### 1. Prepare Frontend for Deployment
 
 Create `client/.env.production`:
+
 ```env
 REACT_APP_API_URL=https://your-api-name.onrender.com/api
 ```
 
 Ensure `client/package.json` has:
+
 ```json
 {
   "scripts": {
@@ -427,10 +471,12 @@ Ensure `client/package.json` has:
 ### 2. Deploy to Render
 
 1. **Create Static Site**
+
    - In Render dashboard, click "New" → "Static Site"
    - Select your repository
 
 2. **Configure Static Site Settings**
+
    ```
    Name: local-data-lister-app
    Branch: main
@@ -445,7 +491,9 @@ Ensure `client/package.json` has:
    - Note your frontend URL: `https://your-app-name.onrender.com`
 
 ### 3. Update Backend Environment
+
 Go back to your backend service and update:
+
 ```env
 FRONTEND_URL=https://your-app-name.onrender.com
 ```
@@ -453,12 +501,15 @@ FRONTEND_URL=https://your-app-name.onrender.com
 ## 🔄 Auto-Deploy Configuration
 
 ### 1. Enable Auto-Deploy
+
 For both services:
+
 1. Go to service settings
 2. Under "Build & Deploy" → Enable "Auto-Deploy"
 3. Set branch to `main`
 
 ### 2. Test Auto-Deploy
+
 1. Make a small change to your code
 2. Push to main branch
 3. Verify both services redeploy automatically
@@ -468,6 +519,7 @@ For both services:
 ### Environment Variables Checklist
 
 **Backend Environment Variables:**
+
 - [x] `NODE_ENV=production`
 - [x] `PORT=3001`
 - [x] `MONGODB_URI=<your-mongodb-connection-string>`
@@ -475,9 +527,11 @@ For both services:
 - [x] `FRONTEND_URL=<your-frontend-url>`
 
 **Frontend Environment Variables:**
+
 - [x] `REACT_APP_API_URL=<your-backend-url>/api`
 
 ### Security Checklist
+
 - [x] Strong JWT secret (32+ characters)
 - [x] MongoDB user with minimal required permissions
 - [x] CORS configured for production domains only
@@ -487,20 +541,26 @@ For both services:
 ## 📊 Monitoring and Maintenance
 
 ### 1. Health Monitoring
+
 Set up monitoring for:
+
 - Backend health: `https://your-api-name.onrender.com/health`
 - Frontend availability: `https://your-app-name.onrender.com`
 
 ### 2. Log Access
+
 **Backend Logs:**
+
 - Render Dashboard → Your Web Service → Logs
 - Real-time logs available during development
 
 **Frontend Logs:**
+
 - Browser Developer Tools → Console
 - Render build logs in dashboard
 
 ### 3. Performance Monitoring
+
 - Monitor response times via Render metrics
 - Set up alerts for service downtime
 - Consider using external monitoring (UptimeRobot, Pingdom)
@@ -510,6 +570,7 @@ Set up monitoring for:
 ### Common Deployment Issues
 
 **Build Failures:**
+
 ```bash
 # Check package.json scripts
 # Verify Node.js version compatibility
@@ -517,12 +578,14 @@ Set up monitoring for:
 ```
 
 **CORS Issues:**
+
 ```bash
 # Verify FRONTEND_URL matches actual frontend domain
 # Check CORS configuration in server code
 ```
 
 **Database Connection:**
+
 ```bash
 # Test MongoDB URI with MongoDB Compass
 # Verify network access settings in Atlas
@@ -530,6 +593,7 @@ Set up monitoring for:
 ```
 
 **Environment Variables:**
+
 ```bash
 # Verify all required variables are set
 # Check for typos in variable names
@@ -537,12 +601,14 @@ Set up monitoring for:
 ```
 
 ### Rollback Procedure
+
 1. Go to Render Dashboard
 2. Select the problematic service
 3. Go to "Deploys" tab
 4. Click "Redeploy" on a previous successful deployment
 
 ### Getting Help
+
 - Render Documentation: https://render.com/docs
 - Render Community: https://community.render.com
 - MongoDB Atlas Support: https://support.mongodb.com
@@ -550,22 +616,26 @@ Set up monitoring for:
 ## 💰 Cost Estimation
 
 ### Render Pricing (as of 2024)
+
 - **Static Sites**: Free (with Render branding)
-- **Web Services**: 
+- **Web Services**:
   - Free tier: 750 hours/month (sleeps after 15min inactivity)
   - Starter: $7/month (always on, custom domains)
 
 ### MongoDB Atlas Pricing
+
 - **Free Tier (M0)**: 512MB storage, shared cluster
 - **Dedicated clusters**: Starting at $9/month
 
 ### Total Monthly Cost
+
 - **Development/Testing**: $0 (free tiers)
 - **Production**: $7-16/month (Render Starter + Atlas M2)
 
 ## 🎯 Production Checklist
 
 Before going live:
+
 - [x] All environment variables configured
 - [x] Database populated with initial data
 - [x] Authentication working end-to-end
@@ -580,20 +650,24 @@ Before going live:
 ## 🔄 Maintenance Schedule
 
 **Weekly:**
+
 - Check application health and performance
 - Review error logs
 - Verify backup integrity
 
 **Monthly:**
+
 - Update dependencies
 - Review security settings
 - Performance optimization review
 
 **Quarterly:**
+
 - Conduct security audit
 - Review and update documentation
 - Plan feature enhancements
-```
+
+````
 
 ---
 
@@ -626,9 +700,10 @@ curl -X POST https://your-api-name.onrender.com/login \
     "username": "admin",
     "password": "password"
   }'
-```
+````
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -650,6 +725,7 @@ curl https://your-api-name.onrender.com/health
 ```
 
 **Expected Response:**
+
 ```json
 {
   "status": "OK",
@@ -667,6 +743,7 @@ curl https://your-api-name.onrender.com/api/items \
 ```
 
 **Expected Response:**
+
 ```json
 {
   "success": true,
@@ -693,6 +770,7 @@ curl "https://your-api-name.onrender.com/api/items?type=Cafe" \
 ```
 
 **Expected Response:**
+
 ```json
 {
   "success": true,
@@ -725,6 +803,7 @@ curl -X POST https://your-api-name.onrender.com/api/items \
 ```
 
 **Expected Response:**
+
 ```json
 {
   "success": true,
@@ -890,11 +969,13 @@ curl -X POST https://your-api-name.onrender.com/api/items \
 ### 1. Test Authentication Errors
 
 **Missing Token:**
+
 ```bash
 curl https://your-api-name.onrender.com/api/items
 ```
 
 **Expected Response (401):**
+
 ```json
 {
   "success": false,
@@ -903,12 +984,14 @@ curl https://your-api-name.onrender.com/api/items
 ```
 
 **Invalid Token:**
+
 ```bash
 curl https://your-api-name.onrender.com/api/items \
   -H "Authorization: Bearer invalid-token"
 ```
 
 **Expected Response (403):**
+
 ```json
 {
   "success": false,
@@ -919,6 +1002,7 @@ curl https://your-api-name.onrender.com/api/items \
 ### 2. Test Validation Errors
 
 **Missing Required Fields:**
+
 ```bash
 curl -X POST https://your-api-name.onrender.com/api/items \
   -H "Content-Type: application/json" \
@@ -929,6 +1013,7 @@ curl -X POST https://your-api-name.onrender.com/api/items \
 ```
 
 **Expected Response (400):**
+
 ```json
 {
   "success": false,
@@ -939,12 +1024,14 @@ curl -X POST https://your-api-name.onrender.com/api/items \
 ### 3. Test Server Errors
 
 **Invalid Endpoint:**
+
 ```bash
 curl https://your-api-name.onrender.com/api/nonexistent \
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
 **Expected Response (404):**
+
 ```json
 {
   "success": false,
@@ -1022,6 +1109,7 @@ echo -e "\n${GREEN}🎉 API tests completed!${NC}"
 ```
 
 Make it executable and run:
+
 ```bash
 chmod +x test-api.sh
 ./test-api.sh
@@ -1053,17 +1141,20 @@ ab -n 100 -c 10 https://your-api-name.onrender.com/health
 ## 🐛 Debugging Tips
 
 ### 1. Check Response Headers
+
 ```bash
 curl -I https://your-api-name.onrender.com/health
 ```
 
 ### 2. Verbose curl Output
+
 ```bash
 curl -v https://your-api-name.onrender.com/api/items \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
 ### 3. Test Different Content Types
+
 ```bash
 # Test with wrong content type
 curl -X POST https://your-api-name.onrender.com/api/items \
@@ -1077,6 +1168,7 @@ curl -X POST https://your-api-name.onrender.com/api/items \
 Before production deployment:
 
 **Basic Functionality:**
+
 - [x] Health check responds
 - [x] Authentication works
 - [x] Get all items works
@@ -1084,22 +1176,26 @@ Before production deployment:
 - [x] Create new item works
 
 **Error Handling:**
+
 - [x] Missing token returns 401
 - [x] Invalid token returns 403
 - [x] Missing fields return 400
 - [x] Invalid endpoints return 404
 
 **Security:**
+
 - [x] CORS headers present
 - [x] HTTPS enforced
 - [x] JWT tokens expire appropriately
 - [x] No sensitive data in responses
 
 **Performance:**
+
 - [x] Response times under 500ms
 - [x] Can handle concurrent requests
 - [x] No memory leaks during load testing
-```
+
+````
 
 ---
 
@@ -1156,4 +1252,177 @@ The application works on:
 - Type categories: `Restaurant`, `Cafe`, `Park`, `Event`
 - Filtering is case-sensitive
 
-**
+**Clear Filter:**
+- To reset the filter, delete the text in the filter input
+- All items will be displayed again
+
+### 3. Adding Items
+
+**New Item Form:**
+- Click "Add New Item" button
+- Fill in the item details:
+  - Name (required)
+  - Type (required)
+  - Details (optional)
+
+**Submit Item:**
+- Click "Submit" to add the item
+- The item will be saved and visible in the list
+
+**Validation Messages:**
+- If required fields are missing, an error message will be displayed
+- Correct the errors and submit again
+
+### 4. Authentication
+
+**Login:**
+- Access restricted features like adding items
+- Enter your credentials and click "Login"
+
+**Logout:**
+- Click "Logout" to end your session
+- You will be redirected to the login page
+
+## 📅 Scheduling
+
+### 1. View Schedule
+
+**Accessing the Schedule:**
+- Click on "Schedule" in the navigation menu
+- View the calendar with your scheduled items
+
+**Calendar View:**
+- See your items plotted on the calendar
+- Switch between month, week, and day views
+
+### 2. Add to Calendar
+
+**New Event Form:**
+- Click "Add to Calendar" button
+- Fill in the event details:
+  - Title (required)
+  - Date and Time (required)
+  - Description (optional)
+
+**Save Event:**
+- Click "Save" to add the event to your calendar
+- The event will be visible in the calendar view
+
+### 3. Notifications
+
+**Email Notifications:**
+- Receive email alerts for upcoming events
+- Configure your email settings in the profile section
+
+**In-App Notifications:**
+- Get notified within the app for important updates
+- Check the bell icon for new notifications
+
+## 📊 Analytics
+
+### 1. View Reports
+
+**Accessing Reports:**
+- Click on "Reports" in the navigation menu
+- Choose the report type: Sales, Users, Events
+
+**Sales Report:**
+- View total sales, number of transactions, and top items
+- Filter by date range and item category
+
+**User Report:**
+- See user growth, active users, and engagement metrics
+- Filter by date range and user segment
+
+### 2. Export Data
+
+**Export Options:**
+- Export reports as CSV or Excel files
+- Choose the export format and click "Export"
+
+**Email Reports:**
+- Schedule regular email reports to your inbox
+- Configure in the reports section
+
+## ⚙️ Settings
+
+### 1. Profile Settings
+
+**Update Profile:**
+- Click on your profile icon and select "Settings"
+- Update your name, email, and password
+
+**Change Password:**
+- Enter your current password and new password
+- Confirm the new password and save changes
+
+### 2. Notification Settings
+
+**Email Notifications:**
+- Enable or disable email notifications
+- Choose your preferred notification frequency
+
+**Push Notifications:**
+- Enable or disable push notifications for the app
+- Configure in your device settings
+
+### 3. Billing
+
+**View Billing Info:**
+- Check your current plan and usage
+- View upcoming invoices and payment history
+
+**Update Payment Method:**
+- Add or update your credit card information
+- Save changes to update your billing method
+
+## ❓ FAQs
+
+### 1. Common Issues
+
+**Login Problems:**
+- Ensure your username and password are correct
+- Reset your password if you forgot it
+
+**Data Not Showing:**
+- Check your internet connection
+- Refresh the page or try again later
+
+### 2. Feature Questions
+
+**How to add a new item?**
+- Click "Add New Item" and fill in the details
+- Submit the form to save the item
+
+**How to filter items?**
+- Use the filter input at the top of the items list
+- Type the category name to filter by type
+
+### 3. Technical Support
+
+**Contact Support:**
+- For technical issues, contact our support team
+- Provide detailed information about the problem
+
+**Report a Bug:**
+- If you find a bug, report it through the app
+- Include steps to reproduce the issue
+
+## 📞 Contact Us
+
+**Support Email:**
+- For support, email us at support@localdatalister.com
+
+**Phone Support:**
+- Call us at 1-800-555-0199 (9am - 5pm EST)
+
+**Social Media:**
+- Follow us on Twitter, Facebook, and Instagram
+- @localdatalister
+
+## 🔗 Useful Links
+
+- [API Documentation](https://your-api-name.onrender.com/docs)
+- [Frontend Repository](https://github.com/your-username/local-data-lister-client)
+- [Backend Repository](https://github.com/your-username/local-data-lister-server)
+````

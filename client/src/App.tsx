@@ -129,6 +129,9 @@ function App() {
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [showCategorySelect, setShowCategorySelect] = useState(false); // <-- Add this line if missing
 
+  // Change API URLs to use your deployed backend
+  const API_BASE = 'https://local-data-lister.onrender.com';
+
   // Get unique categories from items for dropdown
   const categories = Array.from(new Set(items.map(item => item.type))).sort();
 
@@ -136,7 +139,7 @@ function App() {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch('/api/google-login', {
+      const response = await fetch(`${API_BASE}/api/google-login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ credential }),
@@ -168,7 +171,7 @@ function App() {
       setError(null);
       console.log('Fetching items with token:', token);
       const query = sortField !== 'none' ? `?sortBy=${sortField}&sortOrder=${sortOrder}` : '';
-      const response = await fetch(`/api/items${query}`, {
+      const response = await fetch(`${API_BASE}/api/items${query}`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
       console.log('Fetch response status:', response.status);

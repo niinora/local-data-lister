@@ -155,10 +155,10 @@ app.delete('/api/items/:id', authenticate, async (req, res) => {
     const db = await connect();
     const collection = db.collection('items');
     const { id } = req.params;
-
+    
     // Try to find the item with both string _id and ObjectId formats
     let existingItem = await collection.findOne({ _id: id });
-
+    
     // If not found with string ID, try with ObjectId (for MongoDB generated IDs)
     if (!existingItem) {
       try {
@@ -170,19 +170,19 @@ app.delete('/api/items/:id', authenticate, async (req, res) => {
         console.log('ObjectId conversion failed:', objectIdError.message);
       }
     }
-
+    
     console.log('Found existing item:', existingItem);
-
+    
     if (!existingItem) {
       console.log('Item not found in database');
       return res.status(404).json({ success: false, message: 'Item not found' });
     }
-
+    
     // Delete using the same ID format that was found
     const deleteQuery = { _id: existingItem._id };
     const result = await collection.deleteOne(deleteQuery);
     console.log('Delete result:', result);
-
+    
     if (result.deletedCount === 1) {
       console.log('Item successfully deleted');
       res.json({ success: true, message: 'Item deleted successfully' });
@@ -220,7 +220,7 @@ app.patch('/api/items/:id', authenticate, async (req, res) => {
             { $set: { name, type, details } }
           );
         }
-      } catch (e) { }
+      } catch (e) {}
     }
     if (result.matchedCount === 0) {
       return res.status(404).json({ success: false, message: 'Item not found' });
